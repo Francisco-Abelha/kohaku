@@ -55,6 +55,7 @@ Browser ──> Static pages (Astro, built at deploy time)
 
 ```
 src/
+  assets/          # product and journal images, optimised at build time
   content/
     products/      # one JSON file per product, with variants and prices
     journal/       # Markdown journal posts
@@ -64,7 +65,7 @@ src/
   pages/api/       # checkout and Stripe webhook endpoints
 scripts/
   export_wordpress.py   # migrates content out of WordPress
-public/            # images and static files
+public/            # static files served unchanged, such as favicons
 docs/
   decisions.md     # notes on the main technical choices
   screenshots/
