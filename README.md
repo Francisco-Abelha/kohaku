@@ -1,43 +1,120 @@
-# Astro Starter Kit: Minimal
+# Kohaku
 
-```sh
-npm create astro@latest -- --template minimal
+A storefront for Kohaku, a single-origin matcha brand I designed, rebuilt from WordPress and WooCommerce as a custom Astro site.
+
+> **Concept project.** Kohaku is not a real business. Checkout runs in Stripe **test mode**, so no real payments are taken. Use card `4242 4242 4242 4242` with any future date and CVC to try it.
+
+**Live site:** https://shopkohaku.com
+**Original WordPress version:** _[link to an archived copy or screenshots]_
+
+![Kohaku home page](docs/screenshots/home.png)
+
+---
+
+## Why I rebuilt it
+
+The first version of Kohaku was built with WordPress and WooCommerce. It looked the way I wanted, but I didn't control most of the code behind it. I rebuilt it to:
+
+- understand everything the site does, from product pages to checkout;
+- make it faster and lighter by sending only the code each page needs;
+- practise the migration on my own project before doing the same for two business sites.
+
+## Before and after
+
+| | WordPress version | This version |
+|---|---|---|
+| Platform | WordPress + WooCommerce | Astro + TypeScript |
+| Hosting | _[current host]_ | Vercel |
+| Content | Database, edited in wp-admin | Markdown and JSON files in this repo |
+| Checkout | WooCommerce | Stripe Checkout (test mode) |
+| Lighthouse performance (mobile) | _[score]_ | _[score]_ |
+| Home page weight | _[KB]_ | _[KB]_ |
+
+_Measured with Lighthouse in Chrome DevTools on [date], mobile preset._
+
+## Stack
+
+- **[Astro](https://astro.build)**: builds each page to static HTML. JavaScript only loads for the parts that need it, such as the cart.
+- **TypeScript**: types for products, variants and cart items.
+- **Content collections**: products and journal posts live as files and are validated against a schema at build time.
+- **Stripe Checkout**: hosted payment page; a webhook confirms paid orders.
+- **Vercel**: every push to `main` deploys to production, and every pull request gets a preview URL.
+- **Python**: a one-off script that exported products and posts from the WordPress REST API.
+
+## How it works
+
+```
+Browser ──> Static pages (Astro, built at deploy time)
+   │
+   └─ Cart (client-side) ──> /api/checkout ──> Stripe Checkout
+                                                   │
+                         /api/stripe-webhook <─────┘  (payment confirmed)
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Project structure
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```
+src/
+  content/
+    products/      # one JSON file per product, with variants and prices
+    journal/       # Markdown journal posts
+  components/      # Header, ProductCard, Cart, ...
+  layouts/         # shared page layouts
+  pages/           # routes: /, /shop, /product/[slug], /journal/[slug], ...
+  pages/api/       # checkout and Stripe webhook endpoints
+scripts/
+  export_wordpress.py   # migrates content out of WordPress
+public/            # images and static files
+docs/
+  decisions.md     # notes on the main technical choices
+  screenshots/
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Running it locally
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Requirements: Node.js (LTS) and a Stripe account in test mode.
 
-Any static assets, like images, can be placed in the `public/` directory.
+```bash
+git clone https://github.com/Francisco-Abelha/kohaku.git
+cd kohaku
+npm install
+cp .env.example .env    # add your Stripe test keys
+npm run dev             # http://localhost:4321
+```
 
-## 🧞 Commands
+Environment variables (see `.env.example`):
 
-All commands are run from the root of the project, from a terminal:
+| Variable | Purpose |
+|---|---|
+| `STRIPE_SECRET_KEY` | Stripe **test** secret key |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret for the webhook endpoint |
+| `PUBLIC_SITE_URL` | Base URL used for redirects after checkout |
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Migrating content from WordPress
 
-## 👀 Want to learn more?
+`scripts/export_wordpress.py` reads products and posts from the old site's REST API and writes them into `src/content/`.
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+```bash
+python3 scripts/export_wordpress.py --site https://shopkohaku.com --out src/content
+```
+
+Old WordPress URLs redirect to their new paths, so existing links keep working. The redirects are listed in `vercel.json`.
+
+## Decisions and trade-offs
+
+The main ones are written up in [`docs/decisions.md`](docs/decisions.md):
+
+- **Astro instead of Next.js**: the site is mostly content, so static pages with a small interactive cart fit better than a full React app.
+- **Files instead of a CMS**: as the only editor, I'm happy editing files. A business site would need a CMS so the owner can update it without me.
+- **Stripe Checkout instead of a custom payment form**: Stripe handles card data and payment security.
+
+## What I'd do next
+
+- [ ] Add a headless CMS so non-developers can edit products
+- [ ] Save orders from the webhook to a database
+- [ ] Automated tests for the cart and checkout flow
+
+## Credits
+
+Brand, design and code by Francisco Abelha.
+Photography: _[source and licence for each image]_
