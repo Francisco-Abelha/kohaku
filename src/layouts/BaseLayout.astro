@@ -41,7 +41,10 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
         if (document.querySelector('[data-vt-product]')) return;
         const from = window.navigation?.activation?.from?.url;
         const id = from && new URL(from).pathname.match(/^\/product\/([^/]+)\/$/)?.[1];
-        document.querySelector(`[data-product="${id}"] img`)?.setAttribute('data-vt-product', '');
+        // The shop shows each photo twice (row and fixed stage), one hidden: tag the visible one.
+        [...document.querySelectorAll(`[data-product="${id}"] img`)]
+          .find((img) => img.checkVisibility())
+          ?.setAttribute('data-vt-product', '');
       });
     </script>
   </head>
@@ -93,8 +96,13 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
   // Page transitions, going forward: tag only the clicked card's photo, so just that
   // one photo morphs into the product page (its gallery carries the same tag).
   document.addEventListener('click', (event) => {
-    const link = (event.target as Element).closest('[data-product] a[href^="/product/"]');
-    const img = link?.closest('[data-product]')?.querySelector('img');
+    const card = (event.target as Element).closest('[data-product] a[href^="/product/"]')?.closest<HTMLElement>('[data-product]');
+    if (!card) return;
+    // The card's own photo, or (shop page, wide screens) the visible stage copy of it.
+    const own = card.querySelector('img');
+    const img = own?.checkVisibility()
+      ? own
+      : [...document.querySelectorAll(`[data-product="${card.dataset.product}"] img`)].find((el) => el.checkVisibility());
     if (!img) return;
     // A product page's own gallery is tagged too; names must be unique, so untag it first.
     document.querySelectorAll('[data-vt-product]').forEach((el) => el.removeAttribute('data-vt-product'));

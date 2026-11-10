@@ -85,3 +85,9 @@
 **Chose:** Astro's built-in Fonts API downloads Inter and Cormorant Garamond from Google at build time and serves them from our domain.
 **Alternatives:** a Google Fonts `<link>`, as WordPress uses; `@fontsource` npm packages.
 **Why:** visitors make no request to Google, which is faster and avoids sending EU visitors' IP addresses to a third party. It adds no dependency. Cormorant Garamond loads only weight 600, as on WordPress, so the text renders the same.
+
+## Shop page as a lookbook with a fixed photo
+
+**Chose:** one list of rich product rows beside a fixed photo that changes as each row crosses the middle of the screen (IntersectionObserver). Phones and no-JavaScript visitors get a photo in every row. Category pages keep the WordPress-style grid.
+**Alternatives:** a hover-photo category index, a pinned horizontal strip and a filterable grid (built, then dropped: the hover photos felt gimmicky and the strip held the scroll hostage); a broken grid; category chapters.
+**Why:** it feels editorial without taking control of the scroll. The page always scrolls normally, and the photo only reacts to where you are.
