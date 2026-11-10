@@ -59,6 +59,8 @@ const tiles = [
     </div>
   </section>
 
+  <!-- The layer wrapper puts the photo above "Our story", which slides out from under it. -->
+  <div class="cover-layer">
   <div class="cover">
     <Image
       src={heroImage}
@@ -68,9 +70,10 @@ const tiles = [
       loading="eager"
     />
   </div>
+  </div>
 
   <section class="section story">
-    <div class="story-text" data-reveal>
+    <div class="story-text">
       <p class="eyebrow">Our story</p>
       <h2>Four gardens, kept apart.</h2>
       <p>
@@ -86,8 +89,6 @@ const tiles = [
       alt="Matcha powder, a black chawan with bamboo whisk, and an iced matcha on a grey surface"
       widths={[560, 1120]}
       sizes="(max-width: 781px) 88vw, 524px"
-      data-reveal
-      style="--reveal-delay: 150ms"
     />
   </section>
 
@@ -359,6 +360,43 @@ const tiles = [
         animation-timeline: --cover;
         animation-range: entry 0% cover 60%;
       }
+    }
+  }
+  /* Bottom layering: the photo sits above "Our story", which starts tucked under it. */
+  .cover-layer {
+    position: relative;
+    z-index: 1;
+  }
+  /* Shadow strip under the photo's bottom edge. A box-shadow would be cut off by the
+     clip-path reveal above, so it lives on the wrapper instead. */
+  .cover-layer::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 48px;
+    background: linear-gradient(rgba(26, 26, 26, 0.16), rgba(26, 26, 26, 0));
+    pointer-events: none;
+  }
+  .story {
+    position: relative;
+    z-index: 0;
+  }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .story {
+        animation-name: from-under;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 100%;
+      }
+    }
+  }
+  @keyframes from-under {
+    from {
+      transform: translateY(-35%);
     }
   }
   @keyframes unmask {
