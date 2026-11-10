@@ -23,6 +23,10 @@ const gardens = [
 
 <!-- Text and sizes copied from the WordPress About page. -->
 <BaseLayout title="About">
+  <!-- The intro stays pinned (sticky) while the photo scrolls up over it; "Origins"
+       then slides out from under the photo. Together the photo reads as a layer above both. -->
+  <div class="stack">
+  <div class="intro first-screen">
   <h1 class="container page-title">About</h1>
 
   <section class="hero">
@@ -34,14 +38,18 @@ const gardens = [
       nothing about where it came from.
     </p>
   </section>
+  </div>
 
-  <Image
-    class="wide"
-    src={heroImage}
-    alt="A white bowl of whisked matcha beside a bamboo chasen and a wooden scoop of powder"
-    widths={[828, 1280, 1920]}
-    sizes="100vw"
-  />
+  <div class="wide-wrap">
+    <Image
+      class="wide"
+      src={heroImage}
+      alt="A white bowl of whisked matcha beside a bamboo chasen and a wooden scoop of powder"
+      widths={[828, 1280, 1920]}
+      sizes="100vw"
+    />
+  </div>
+  </div>
 
   <section class="row first">
     <div>
@@ -180,8 +188,56 @@ const gardens = [
     line-height: 1.75;
     margin: 0;
   }
+  /* Layering. The stack bounds the sticky intro, so it un-pins once the photo has covered it. */
+  .stack {
+    position: relative;
+  }
+  .intro {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-paper);
+  }
+  /* margin: auto centres the hero in the space left under the page title. */
+  .intro .hero {
+    margin: auto;
+    width: 100%;
+  }
+  /* Higher layer than the intro and Origins, with a soft shadow so it reads as on top. */
+  .wide-wrap {
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 60px rgba(26, 26, 26, 0.18);
+  }
+  /* At least a screen tall (cropped to fit), so on phones it still fully covers the
+     intro and hides Origins while it is tucked underneath. */
   .wide {
     width: 100%;
+    min-height: 100svh;
+    object-fit: cover;
+  }
+  .row.first {
+    position: relative;
+    z-index: 0;
+  }
+  /* Origins starts shifted up, under the photo, and slides down into place as it scrolls in.
+     Longhands on purpose: the minifier would fold animation-timeline into the shorthand. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .row.first {
+        animation-name: from-under;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 100%;
+      }
+    }
+  }
+  @keyframes from-under {
+    from {
+      transform: translateY(-35%);
+    }
   }
 
   /* Two columns, text 55% and image 45%, as on WordPress. */
