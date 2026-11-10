@@ -35,6 +35,16 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
   </body>
 </html>
 
+<script>
+  // shortcut: forms marked data-demo only show their note, like on WordPress; phase 4 makes them real.
+  for (const form of document.querySelectorAll<HTMLFormElement>('form[data-demo]')) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      form.querySelector<HTMLElement>('.note')!.hidden = false;
+    });
+  }
+</script>
+
 <style>
   .notice {
     margin: 0;

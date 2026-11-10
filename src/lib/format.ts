@@ -1,4 +1,10 @@
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const longDate = new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' });
+
+/** "August 2, 2026", the WordPress date format. */
+export function formatDate(date: Date): string {
+  return longDate.format(date);
+}
 
 export function formatPrice(cents: number): string {
   return usd.format(cents / 100);
