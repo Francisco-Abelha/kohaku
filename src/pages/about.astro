@@ -4,6 +4,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import heroImage from '../assets/products/bamboo-scoop-matcha-composition-scaled.jpg';
 import originsImage from '../assets/products/matcha-lifestyle2-scaled.jpg';
 import sourcingImage from '../assets/journal/matcha-lifestyle3-scaled.jpg';
+import bowlCutout from '../assets/products/matcha-bowl-scaled.jpg';
+import whiskCutout from '../assets/products/matcha-whisk.jpg';
+import scoopCutout from '../assets/products/matcha-powder-scoop-scaled.jpg';
+
+// Split into words at build time, so CSS can darken them one by one while scrolling.
+const lead =
+  'Kohaku exists because of a disappointing cup of matcha. Not offensively bad — worse than that. It tasted of nothing in particular: vaguely grassy, vaguely bitter, entirely anonymous. It had cost a great deal and told us nothing about where it came from.';
+const leadWords = lead.split(' ');
+
+// Decorative round crops around the headline. depth = how far each moves with the mouse.
+const cutouts = [
+  { image: bowlCutout, className: 'c-bowl', depth: 34 },
+  { image: whiskCutout, className: 'c-whisk', depth: 22 },
+  { image: scoopCutout, className: 'c-scoop', depth: 46 },
+];
 
 const gardens = [
   {
@@ -27,16 +42,28 @@ const gardens = [
        then slides out from under the photo. Together the photo reads as a layer above both. -->
   <div class="stack">
   <div class="intro first-screen">
+  <canvas class="dust" aria-hidden="true"></canvas>
+
+  {cutouts.map((cutout) => (
+    <div class:list={['cutout', cutout.className]} style={`--depth: ${cutout.depth}`} aria-hidden="true">
+      <Image src={cutout.image} alt="" widths={[200, 340]} sizes="170px" />
+    </div>
+  ))}
+
   <section class="hero">
     <p class="eyebrow">Our story</p>
-    <h1>Nothing blended. Nothing hurried.</h1>
-    <p class="lead">
-      Kohaku exists because of a disappointing cup of matcha. Not offensively bad — worse than that. It tasted of
-      nothing in particular: vaguely grassy, vaguely bitter, entirely anonymous. It had cost a great deal and told us
-      nothing about where it came from.
+    <!-- Two beats: the second line rises more slowly than the first. -->
+    <h1>
+      <span class="line"><span>Nothing blended.</span></span>{' '}<span class="line slow"><span>Nothing hurried.</span></span>
+    </h1>
+    <p class="lead" style={`--n: ${leadWords.length}`}>
+      {leadWords.map((word, i) => <span class="w" style={`--i: ${i}`}>{word + ' '}</span>)}
     </p>
   </section>
   </div>
+
+  <!-- Scroll runway: the intro stays pinned while this passes, and the paragraph is "read" here. -->
+  <div class="runway" aria-hidden="true"></div>
 
   <div class="wide-wrap">
     <Image
@@ -143,6 +170,99 @@ const gardens = [
   </section>
 </BaseLayout>
 
+<script>
+  const intro = document.querySelector<HTMLElement>('.intro')!;
+  const canvas = intro.querySelector<HTMLCanvasElement>('.dust')!;
+  const motionOK = matchMedia('(prefers-reduced-motion: no-preference)').matches;
+
+  // Mouse position over the intro, from -1 to 1 on each axis. CSS reads --mx/--my for the
+  // cutout parallax; the dust uses the pixel position to move away from the cursor.
+  const pointer = { x: -9999, y: -9999 };
+  if (motionOK) {
+    intro.addEventListener('pointermove', (event) => {
+      const r = intro.getBoundingClientRect();
+      pointer.x = event.clientX - r.left;
+      pointer.y = event.clientY - r.top;
+      if (event.pointerType === 'mouse') {
+        intro.style.setProperty('--mx', String((pointer.x / r.width) * 2 - 1));
+        intro.style.setProperty('--my', String((pointer.y / r.height) * 2 - 1));
+      }
+    });
+    intro.addEventListener('pointerleave', () => {
+      pointer.x = pointer.y = -9999;
+      intro.style.setProperty('--mx', '0');
+      intro.style.setProperty('--my', '0');
+    });
+  }
+
+  // Matcha dust: fine particles drifting up, pushed gently away from the cursor.
+  if (motionOK) {
+    const ctx = canvas.getContext('2d')!;
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    let width = 0;
+    let height = 0;
+    const resize = () => {
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      canvas.width = width * dpr; // sharp on high-density screens
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const particles = Array.from({ length: 70 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      radius: 0.6 + Math.random() * 1.8,
+      speed: 0.15 + Math.random() * 0.35,
+      drift: (Math.random() - 0.5) * 0.15,
+      alpha: 0.15 + Math.random() * 0.35,
+    }));
+
+    let visible = false;
+    let running = false;
+    const tick = () => {
+      if (!visible) {
+        running = false; // stop drawing while off-screen
+        return;
+      }
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#4a5d3a';
+      for (const p of particles) {
+        const dx = p.x - pointer.x;
+        const dy = p.y - pointer.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance < 100) {
+          const push = (1 - distance / 100) * 1.5;
+          p.x += (dx / (distance || 1)) * push;
+          p.y += (dy / (distance || 1)) * push;
+        }
+        p.x += p.drift;
+        p.y -= p.speed;
+        if (p.y < -5) {
+          p.y = height + 5;
+          p.x = Math.random() * width;
+        }
+        if (p.x < -5) p.x = width + 5;
+        if (p.x > width + 5) p.x = -5;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      requestAnimationFrame(tick);
+    };
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !running) {
+        running = true;
+        requestAnimationFrame(tick);
+      }
+    }).observe(canvas);
+  }
+</script>
+
 <style>
   section {
     padding-inline: 24px;
@@ -197,10 +317,170 @@ const gardens = [
     flex-direction: column;
     background: var(--color-paper);
   }
-  /* margin: auto centres the hero in the space left under the page title. */
+  /* margin: auto centres the hero in the screen; it sits above the dust and cutouts. */
+  .intro {
+    overflow: hidden;
+  }
   .intro .hero {
+    position: relative;
+    z-index: 2;
     margin: auto;
     width: 100%;
+  }
+  .runway {
+    height: 70svh;
+  }
+
+  /* Two-beat headline: each line rises inside its own clipping window. */
+  .line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+  }
+  .line > span {
+    display: inline-block;
+  }
+
+  /* Dust canvas fills the intro, behind everything. */
+  .dust {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* Cutouts: round crops. Parallax uses the translate property (set from --mx/--my by the
+     script), bobbing uses transform, and the entrance uses scale, so the three never clash. */
+  .cutout {
+    position: absolute;
+    z-index: 1;
+    width: var(--size);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(26, 26, 26, 0.14);
+    translate: calc(var(--mx, 0) * var(--depth) * -1px) calc(var(--my, 0) * var(--depth) * -1px);
+    transition: translate 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .cutout :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .c-bowl {
+    --size: 150px;
+    left: 9%;
+    top: 16%;
+  }
+  .c-whisk {
+    --size: 128px;
+    right: 9%;
+    top: 26%;
+  }
+  .c-scoop {
+    --size: 108px;
+    left: 15%;
+    bottom: 14%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero .eyebrow {
+      animation: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both;
+    }
+    .line > span {
+      animation: rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s both;
+    }
+    /* The second beat starts later and moves more slowly: "hurried" isn't. */
+    .line.slow > span {
+      animation-duration: 1.8s;
+      animation-delay: 1.2s;
+    }
+    .lead {
+      animation: fade-up 1s cubic-bezier(0.2, 0.7, 0.2, 1) 2.2s both;
+    }
+    .cutout {
+      animation:
+        pop 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) var(--delay) both,
+        bob 7s ease-in-out var(--delay) infinite;
+    }
+    .c-bowl {
+      --delay: 1.6s;
+    }
+    .c-whisk {
+      --delay: 1.85s;
+    }
+    .c-scoop {
+      --delay: 2.1s;
+    }
+  }
+  @keyframes rise {
+    from {
+      transform: translateY(110%);
+    }
+  }
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      scale: 0.85;
+    }
+  }
+  @keyframes bob {
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Scroll-read: while the runway passes, each word goes from pale to full ink in turn.
+     timeline-scope lets the paragraph follow the runway's progress although it isn't inside it. */
+  @supports (timeline-scope: --read) {
+    @media (prefers-reduced-motion: no-preference) {
+      .stack {
+        timeline-scope: --read;
+      }
+      .runway {
+        view-timeline-name: --read;
+      }
+      .lead .w {
+        animation-name: read;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --read;
+        animation-range-start: entry calc(var(--i) / var(--n) * 80%);
+        animation-range-end: entry calc(var(--i) / var(--n) * 80% + 20%);
+      }
+    }
+  }
+  @keyframes read {
+    from {
+      opacity: 0.2;
+    }
+  }
+
+  @media (max-width: 781.98px) {
+    .c-bowl {
+      --size: 76px;
+      left: 5%;
+      top: 9%;
+    }
+    .c-whisk {
+      --size: 64px;
+      right: 6%;
+      top: 13%;
+    }
+    .c-scoop {
+      --size: 56px;
+      left: auto;
+      right: 10%;
+      bottom: 7%;
+    }
   }
   /* Higher layer than the intro and Origins, with a soft shadow so it reads as on top. */
   .wide-wrap {
