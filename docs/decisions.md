@@ -88,7 +88,7 @@
 
 ## Shop page as a lookbook with a fixed photo
 
-**Chose:** one list of rich product rows beside a fixed photo that changes as each row crosses the middle of the screen (IntersectionObserver). Phones and no-JavaScript visitors get a photo in every row. Category pages keep the WordPress-style grid.
+**Chose:** one list of rich product rows beside a fixed photo that changes as each row crosses the middle of the screen (IntersectionObserver). Phones and no-JavaScript visitors get a photo in every row. Category pages use the same lookbook, with links to the other categories in place of the filter tabs.
 **Alternatives:** a hover-photo category index, a pinned horizontal strip and a filterable grid (built, then dropped: the hover photos felt gimmicky and the strip held the scroll hostage); a broken grid; category chapters.
 **Why:** it feels editorial without taking control of the scroll. The page always scrolls normally, and the photo only reacts to where you are.
 

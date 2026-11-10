@@ -6,7 +6,13 @@ import { priceRange } from '../lib/format';
 
 interface Props {
   products: CollectionEntry<'products'>[];
+  title?: string;
+  description?: string;
+  /** Category pages: the tabs link to the other categories instead of filtering. */
+  current?: Category;
 }
+
+const { title = 'Shop', description, current } = Astro.props;
 
 const categoryOrder = Object.keys(categoryNames) as Category[];
 // Curated order: by category (single origin first), then by name.
@@ -25,19 +31,31 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
      its own photo. -->
 <section class="lookbook first-screen" data-lookbook>
   <header class="intro container">
-    <h1>Shop</h1>
+    <div>
+      <h1>{title}</h1>
+      {description && <p class="description">{description}</p>}
+    </div>
     <p class="count" role="status">{countText(products.length)}</p>
   </header>
 
   <div class="layout container">
     <div class="side">
       <div class="side-inner">
-        <!-- Hidden until the script runs, so the buttons never show without JavaScript. -->
-        <div class="tabs" role="group" aria-label="Filter by category" hidden>
-          {[['all', 'All'], ...Object.entries(categoryNames)].map(([slug, name]) => (
-            <button type="button" data-filter={slug} aria-pressed={slug === 'all' ? 'true' : 'false'}>{name}</button>
-          ))}
-        </div>
+        {current ? (
+          <nav class="tabs" aria-label="Categories">
+            <a href="/shop/">All</a>
+            {Object.entries(categoryNames).map(([slug, name]) => (
+              <a href={`/product-category/${slug}/`} aria-current={slug === current ? 'page' : undefined}>{name}</a>
+            ))}
+          </nav>
+        ) : (
+          // Hidden until the script runs, so the buttons never show without JavaScript.
+          <div class="tabs" role="group" aria-label="Filter by category" hidden>
+            {[['all', 'All'], ...Object.entries(categoryNames)].map(([slug, name]) => (
+              <button type="button" data-filter={slug} aria-pressed={slug === 'all' ? 'true' : 'false'}>{name}</button>
+            ))}
+          </div>
+        )}
         <!-- Decorative copies of the row photos; the rows carry the real alt text. -->
         <div class="stage" aria-hidden="true">
           {products.map((product) => (
@@ -87,7 +105,7 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     const counter = root.querySelector<HTMLElement>('.counter')!;
     const count = root.querySelector<HTMLElement>('.count')!;
     const tabGroup = root.querySelector<HTMLElement>('.tabs')!;
-    const tabs = [...tabGroup.querySelectorAll<HTMLButtonElement>('button')];
+    const tabs = [...tabGroup.querySelectorAll<HTMLButtonElement>('button')]; // none on category pages
     const categories = new Set(tabs.map((t) => t.dataset.filter));
     const motionOK = matchMedia('(prefers-reduced-motion: no-preference)').matches;
     const pad = (n: number) => String(n).padStart(2, '0');
@@ -139,7 +157,7 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     };
 
     tabGroup.hidden = false;
-    render();
+    if (tabs.length) render();
     for (const tab of tabs) {
       tab.addEventListener('click', () => {
         category = tab.dataset.filter!;
@@ -169,6 +187,13 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     font-size: clamp(64px, 10vw, 150px);
     line-height: 0.9;
   }
+  .description {
+    max-width: 60ch;
+    /* Clears the heading's descenders (the g's in "Single Origin"). */
+    margin: 0.9em 0 0;
+    font-size: 17px;
+    line-height: 1.8;
+  }
   .count,
   .place,
   .counter {
@@ -190,8 +215,10 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
   .tabs[hidden] {
     display: none;
   }
-  .tabs button {
+  .tabs button,
+  .tabs a {
     padding: 4px 0;
+    text-decoration: none;
     border: 0;
     background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
     color: var(--color-stone-strong);
@@ -203,10 +230,12 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
       color 0.3s ease,
       background-size 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .tabs button:hover {
+  .tabs button:hover,
+  .tabs a:hover {
     color: var(--color-ink);
   }
-  .tabs button[aria-pressed='true'] {
+  .tabs button[aria-pressed='true'],
+  .tabs a[aria-current='page'] {
     color: var(--color-ink);
     background-size: 100% 1px;
   }

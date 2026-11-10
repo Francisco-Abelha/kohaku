@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ProductListing from '../../components/ProductListing.astro';
+import ShopLookbook from '../../components/ShopLookbook.astro';
 import { categoryDescriptions, categoryNames, type Category } from '../../data/categories';
 
 // Runs once at build time: one page per category, e.g. /product-category/daily/.
@@ -22,5 +22,5 @@ const name = categoryNames[category];
 ---
 
 <BaseLayout title={name}>
-  <ProductListing title={name} description={categoryDescriptions[category]} products={products} />
+  <ShopLookbook title={name} description={categoryDescriptions[category]} products={products} current={category} />
 </BaseLayout>
