@@ -14,7 +14,7 @@ const sorted = [...products].sort((a, b) => a.data.name.localeCompare(b.data.nam
 const count = sorted.length === 1 ? 'Showing the single result' : `Showing all ${sorted.length} results`;
 ---
 
-<div class="container listing">
+<div class="container listing first-screen">
   <header class:list={['listing-header', { 'has-description': description }]}>
     <h1>{title}</h1>
     {description && <p class="description">{description}</p>}

@@ -114,6 +114,12 @@ img {
   color: var(--color-matcha);
 }
 
+/* Every page's first section fills at least the whole screen, so the next section
+   (and the footer) only appear after the first scroll. */
+.first-screen {
+  min-height: 100svh;
+}
+
 /* Small page title above content pages, like the WordPress theme's page header. */
 .page-title {
   font-size: 30px;
