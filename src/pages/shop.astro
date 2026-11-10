@@ -1,11 +1,35 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import CategoryIndex from '../components/CategoryIndex.astro';
+import OriginStrip from '../components/OriginStrip.astro';
 import ProductListing from '../components/ProductListing.astro';
+import { categoryNames, type Category } from '../data/categories';
+import dailyImage from '../assets/products/matcha-latte-warm.jpg';
+import equipmentImage from '../assets/products/matcha-whisk-closeup-scaled.jpg';
 
 const products = await getCollection('products');
+const byName = (a: (typeof products)[number], b: (typeof products)[number]) => a.data.name.localeCompare(b.data.name);
+const inCategory = (category: Category) => products.filter((p) => p.data.category === category).sort(byName);
+
+// Photos for the category index: the same ones as the home page's category tiles,
+// and each category's own product photo where there is no tile.
+const categoryImages: Record<Category, ImageMetadata> = {
+  'single-origin': products.find((p) => p.id === 'ceremonial-matcha-uji')!.data.images[0].src,
+  daily: dailyImage,
+  equipment: equipmentImage,
+  'gift-sets': inCategory('gift-sets')[0].data.images[0].src,
+};
+const indexItems = (Object.keys(categoryNames) as Category[]).map((slug) => ({
+  slug,
+  name: categoryNames[slug],
+  count: inCategory(slug).length,
+  image: categoryImages[slug],
+}));
 ---
 
 <BaseLayout title="Shop">
-  <ProductListing title="Shop" products={products} />
+  <CategoryIndex items={indexItems} />
+  <OriginStrip products={inCategory('single-origin')} />
+  <ProductListing title="All products" headingLevel={2} products={products} filters />
 </BaseLayout>

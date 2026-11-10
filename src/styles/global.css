@@ -225,6 +225,16 @@ img {
   object-fit: cover;
 }
 
+/* Shop filtering and sorting (ProductListing): cards glide to their new places. These are
+   document-level pseudo-elements, so they live here rather than in a component's scoped styles. */
+.product-grid > li {
+  view-transition-class: shop-card;
+}
+::view-transition-group(*.shop-card) {
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
 /* Scroll reveals (script in BaseLayout). Elements are only hidden once the script has added
    .reveal-ready, so without JavaScript or with reduced motion everything simply shows.
    data-reveal="stagger" reveals the element's children one after another. */

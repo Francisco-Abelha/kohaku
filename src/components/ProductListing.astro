@@ -1,40 +1,61 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import ProductCard from './ProductCard.astro';
+import { categoryNames } from '../data/categories';
 
 interface Props {
   title: string;
   description?: string;
   products: CollectionEntry<'products'>[];
+  /** Show category filter buttons (the shop page). */
+  filters?: boolean;
+  /** 2 when another heading on the page is already the h1. */
+  headingLevel?: 1 | 2;
 }
 
-const { title, description, products } = Astro.props;
+const { title, description, products, filters = false, headingLevel = 1 } = Astro.props;
+const Heading = headingLevel === 2 ? 'h2' : 'h1';
 // WordPress's "Default sorting" lists products by name.
 const sorted = [...products].sort((a, b) => a.data.name.localeCompare(b.data.name));
 const count = sorted.length === 1 ? 'Showing the single result' : `Showing all ${sorted.length} results`;
+const filterOptions = filters
+  ? [{ slug: 'all', name: 'All' }, ...Object.entries(categoryNames).map(([slug, name]) => ({ slug, name }))]
+  : [];
 ---
 
-<div class="container listing first-screen">
+<div class="container listing first-screen" id="products">
   <header class:list={['listing-header', { 'has-description': description }]}>
-    <h1>{title}</h1>
+    <Heading class="listing-title">{title}</Heading>
     {description && <p class="description">{description}</p>}
   </header>
 
   <div class="toolbar">
-    <p class="count">{count}</p>
-    <!-- Hidden until the script below runs, so it never shows without JavaScript. -->
-    <select class="sort" aria-label="Shop order" hidden>
-      <option value="default">Default sorting</option>
-      <option value="price">Sort by price: low to high</option>
-      <option value="price-desc">Sort by price: high to low</option>
-    </select>
+    <p class="count" role="status">{count}</p>
+    <!-- Filters and sort stay hidden until the script runs, so they never show without JavaScript. -->
+    <div class="controls">
+      {filters && (
+        <div class="filters" role="group" aria-label="Filter by category" hidden>
+          {filterOptions.map((option) => (
+            <button type="button" data-filter={option.slug} aria-pressed={option.slug === 'all' ? 'true' : 'false'}>
+              {option.name}
+            </button>
+          ))}
+        </div>
+      )}
+      <select class="sort" aria-label="Shop order" hidden>
+        <option value="default">Default sorting</option>
+        <option value="price">Sort by price: low to high</option>
+        <option value="price-desc">Sort by price: high to low</option>
+      </select>
+    </div>
   </div>
 
-  <ul class="product-grid">
+  <!-- data-reveal="stagger": cards rise in one by one as they scroll into view (BaseLayout). -->
+  <ul class="product-grid" data-reveal="stagger">
     {sorted.map((product) => {
       const prices = product.data.variants.map((v) => v.priceCents);
       return (
-        <li data-min={Math.min(...prices)} data-max={Math.max(...prices)}>
+        <li data-category={product.data.category} data-min={Math.min(...prices)} data-max={Math.max(...prices)}>
           <ProductCard product={product} />
         </li>
       );
@@ -43,19 +64,70 @@ const count = sorted.length === 1 ? 'Showing the single result' : `Showing all $
 </div>
 
 <script>
-  const select = document.querySelector<HTMLSelectElement>('.sort')!;
-  const grid = document.querySelector<HTMLUListElement>('.listing .product-grid')!;
-  const original = [...grid.children] as HTMLElement[];
+  const listing = document.querySelector<HTMLElement>('.listing')!;
+  const grid = listing.querySelector<HTMLUListElement>('.product-grid')!;
+  const select = listing.querySelector<HTMLSelectElement>('.sort')!;
+  const count = listing.querySelector<HTMLElement>('.count')!;
+  const filterGroup = listing.querySelector<HTMLElement>('.filters');
+  const chips = [...listing.querySelectorAll<HTMLButtonElement>('.filters button')];
+  const items = [...grid.children] as HTMLElement[]; // original order = default sorting
+  const motionOK = matchMedia('(prefers-reduced-motion: no-preference)').matches;
+  const categories = new Set(chips.map((chip) => chip.dataset.filter));
+  let category = 'all';
 
-  select.hidden = false;
-  select.addEventListener('change', () => {
+  // Show the matching cards in the chosen order; move the rest to the end, hidden.
+  const render = () => {
+    const visible = items.filter((li) => category === 'all' || li.dataset.category === category);
     // Like WooCommerce: lowest price for "low to high", highest price for "high to low".
     const byPrice = (key: 'min' | 'max', direction: number) =>
-      [...original].sort((a, b) => (Number(a.dataset[key]) - Number(b.dataset[key])) * direction);
+      [...visible].sort((a, b) => (Number(a.dataset[key]) - Number(b.dataset[key])) * direction);
     const order =
-      select.value === 'price' ? byPrice('min', 1) : select.value === 'price-desc' ? byPrice('max', -1) : original;
-    grid.append(...order); // append() moves existing elements, so this reorders the cards.
-  });
+      select.value === 'price' ? byPrice('min', 1) : select.value === 'price-desc' ? byPrice('max', -1) : visible;
+    for (const li of items) li.hidden = !visible.includes(li);
+    grid.append(...order, ...items.filter((li) => li.hidden)); // append() moves the existing elements
+    count.textContent = visible.length === 1 ? 'Showing the single result' : `Showing all ${visible.length} results`;
+    chips.forEach((chip) => chip.setAttribute('aria-pressed', String(chip.dataset.filter === category)));
+  };
+
+  // Animated version: a same-page view transition. Each card gets a temporary name so the
+  // browser can follow it to its new place; names are removed after, so they never clash
+  // with the page-to-page transitions.
+  const update = () => {
+    if (!motionOK || !document.startViewTransition) return render();
+    items.forEach((li, i) => (li.style.viewTransitionName = `card-${i}`));
+    document.startViewTransition(render).finished.finally(() => items.forEach((li) => (li.style.viewTransitionName = '')));
+  };
+
+  const setCategory = (next: string) => {
+    category = categories.has(next) ? next : 'all';
+    // Keep the filter in the address so a filtered view can be shared.
+    history.replaceState(null, '', category === 'all' ? location.pathname : `?category=${category}`);
+  };
+
+  select.hidden = false;
+  select.addEventListener('change', update);
+
+  if (filterGroup) {
+    filterGroup.hidden = false;
+    category = new URLSearchParams(location.search).get('category') ?? 'all';
+    if (!categories.has(category)) category = 'all';
+    render();
+    for (const chip of chips) {
+      chip.addEventListener('click', () => {
+        setCategory(chip.dataset.filter!);
+        update();
+      });
+    }
+    // The category index above (shop page): a click filters here instead of leaving the page.
+    for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-category-index] a[data-category]')) {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        setCategory(link.dataset.category!);
+        render();
+        listing.scrollIntoView({ behavior: motionOK ? 'smooth' : 'auto' });
+      });
+    }
+  }
 </script>
 
 <style>
@@ -66,12 +138,12 @@ const count = sorted.length === 1 ? 'Showing the single result' : `Showing all $
   .listing-header {
     margin-bottom: 40px;
   }
-  h1 {
+  .listing-title {
     font-size: 30px;
     margin: 0;
   }
   /* Category pages: larger title and description, from the WordPress Additional CSS. */
-  .has-description h1 {
+  .has-description .listing-title {
     font-size: clamp(32px, 4.4vw, 50px);
     line-height: 1.15;
     margin-bottom: 16px;
@@ -87,6 +159,7 @@ const count = sorted.length === 1 ? 'Showing the single result' : `Showing all $
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 16px;
     margin-bottom: 25px;
   }
@@ -96,6 +169,42 @@ const count = sorted.length === 1 ? 'Showing the single result' : `Showing all $
     font-weight: 500;
     letter-spacing: 0.05em;
     text-transform: uppercase;
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .filters[hidden] {
+    display: none;
+  }
+  .filters button {
+    padding: 8px 14px;
+    border: 1px solid var(--color-stone);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-ink);
+    font: 500 12px/1.5 var(--font-body);
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease,
+      border-color 0.3s ease;
+  }
+  .filters button:hover {
+    border-color: var(--color-ink);
+  }
+  .filters button[aria-pressed='true'] {
+    background: var(--color-matcha);
+    border-color: var(--color-matcha);
+    color: var(--color-paper);
   }
   .sort {
     appearance: none;

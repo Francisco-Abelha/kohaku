@@ -76,12 +76,18 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
       },
       { rootMargin: '0px 0px -12% 0px' },
     );
+    // Coming back with the back/forward buttons, whatever is already on screen shows at once:
+    // replaying the fade there would fight the photo morphing back into its card.
+    const returning = (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined)?.type === 'back_forward';
     for (const el of revealables) {
-      // Already on screen at load (e.g. coming back mid-page): show it at once, no fade.
-      if (el.getBoundingClientRect().top < innerHeight * 0.88) el.classList.add('is-revealed');
-      else observer.observe(el);
+      if (returning && el.getBoundingClientRect().top < innerHeight * 0.88) el.classList.add('is-revealed');
     }
     document.documentElement.classList.add('reveal-ready');
+    // Reading a layout value makes the browser apply the hidden state right now. Without it,
+    // elements already on screen would be hidden and revealed in the same frame, so they'd
+    // just appear instead of animating in.
+    void document.body.offsetHeight;
+    revealables.forEach((el) => el.classList.contains('is-revealed') || observer.observe(el));
   }
 
   // Page transitions, going forward: tag only the clicked card's photo, so just that
