@@ -79,6 +79,7 @@ Requirements: Node.js (LTS) and a Stripe account in test mode.
 git clone https://github.com/Francisco-Abelha/kohaku.git
 cd kohaku
 npm install
+git config core.hooksPath .githooks   # blocks direct pushes to main (see .githooks/pre-push)
 cp .env.example .env    # add your Stripe test keys
 npm run dev             # http://localhost:4321
 ```
