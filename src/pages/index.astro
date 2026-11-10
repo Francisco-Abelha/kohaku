@@ -39,9 +39,13 @@ const tiles = [
     </svg>
 
     <div class="hero-content">
-      <h1>Matcha, considered.</h1>
-      <p>Single-origin, stone-milled, and shipped within weeks of harvest.</p>
-      <div class="actions">
+      <!-- Each word rises inside its own clipping window; --i sets its place in the sequence.
+           {' '} is the space between words: Astro drops the line break between the tags. -->
+      <h1>
+        <span class="word"><span style="--i: 0">Matcha,</span></span>{' '}<span class="word"><span style="--i: 1">considered.</span></span>
+      </h1>
+      <p class="intro-in" style="--d: 0.8s">Single-origin, stone-milled, and shipped within weeks of harvest.</p>
+      <div class="actions intro-in" style="--d: 1s">
         <a class="button" href="/product-category/single-origin/">Shop Single Origin</a>
         <a class="button ghost" href="/shop/">All Tea</a>
       </div>
@@ -66,7 +70,7 @@ const tiles = [
   </div>
 
   <section class="section story">
-    <div class="story-text">
+    <div class="story-text" data-reveal>
       <p class="eyebrow">Our story</p>
       <h2>Four gardens, kept apart.</h2>
       <p>
@@ -82,18 +86,20 @@ const tiles = [
       alt="Matcha powder, a black chawan with bamboo whisk, and an iced matcha on a grey surface"
       widths={[560, 1120]}
       sizes="(max-width: 781px) 88vw, 524px"
+      data-reveal
+      style="--reveal-delay: 150ms"
     />
   </section>
 
   <section class="section">
-    <h2 class="centered">Where to start</h2>
-    <p class="intro">Three single-origin gardens and one everyday bowl.</p>
-    <ul class="product-grid inner">
+    <h2 class="centered" data-reveal>Where to start</h2>
+    <p class="intro" data-reveal>Three single-origin gardens and one everyday bowl.</p>
+    <ul class="product-grid inner" data-reveal="stagger">
       {featured.map((product) => <li><ProductCard product={product} /></li>)}
     </ul>
   </section>
 
-  <section class="section tiles" aria-label="Shop by category">
+  <section class="section tiles" aria-label="Shop by category" data-reveal="stagger">
     {tiles.map((tile) => (
       <div class="tile">
         <Image src={tile.image} alt={tile.alt} widths={[400, 800]} sizes="(max-width: 781px) 88vw, 380px" />
@@ -104,8 +110,8 @@ const tiles = [
   </section>
 
   <section class="section">
-    <h2 class="centered journal-title">From the Journal</h2>
-    <ul class="posts inner">
+    <h2 class="centered journal-title" data-reveal>From the Journal</h2>
+    <ul class="posts inner" data-reveal="stagger">
       {posts.map((post) => (
         <li>
           <a href={`/${post.id}/`} tabindex="-1" aria-hidden="true">
@@ -118,7 +124,7 @@ const tiles = [
     </ul>
   </section>
 
-  <section class="signup-section">
+  <section class="signup-section" data-reveal>
     <hr />
     <h2>Brewing guides and seasonal launches</h2>
     <p>A short letter when a new harvest lands. Nothing else.</p>
@@ -232,12 +238,45 @@ const tiles = [
     background: currentColor;
   }
 
+  /* Each word is a window with overflow hidden; the padding keeps the comma's tail inside it. */
+  .word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+  .word > span {
+    display: inline-block;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
+    .word > span {
+      animation: rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-delay: calc(0.35s + var(--i) * 0.14s);
+    }
+    /* Subtitle and buttons use their own --d; the corner details follow last. */
+    .intro-in,
+    .corner {
+      animation: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-delay: var(--d, 1.3s);
+    }
     .enso path {
       animation: draw 2.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s both;
     }
     .scroll::after {
       animation: cue 2.4s ease-in-out infinite;
+    }
+  }
+  @keyframes rise {
+    from {
+      transform: translateY(110%);
+    }
+  }
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
     }
   }
   @keyframes draw {
