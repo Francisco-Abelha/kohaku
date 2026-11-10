@@ -1,12 +1,6 @@
 ---
 import { categoryLinks } from '../data/categories';
 
-interface Props {
-  autoHide?: boolean;
-}
-
-const { autoHide = false } = Astro.props;
-
 const links = [
   { name: 'Journal', href: '/journal/' },
   { name: 'About', href: '/about/' },
@@ -19,7 +13,7 @@ const current = (href: string) => (Astro.url.pathname === href ? 'page' : undefi
 const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
 ---
 
-<header class="site-header" data-autohide={autoHide || undefined}>
+<header class="site-header">
   <div class="container bar">
     <a class="wordmark" href="/">Kohaku</a>
 
@@ -65,41 +59,35 @@ const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
     if (e.key === 'Escape' && nav.hasAttribute('data-open')) setOpen(false);
   });
 
-  // Auto-hiding header (home page): hidden over the hero; past it, it hides while
-  // scrolling down and slides back in when scrolling up.
-  const header = document.querySelector<HTMLElement>('.site-header[data-autohide]');
-  if (header) {
-    const hero = document.querySelector<HTMLElement>('[data-hero]');
-    let lastY = window.scrollY;
-    let scrollingUp = false;
+  // Auto-hiding header, on every page: hidden on load, revealed by scrolling down,
+  // hidden again by scrolling up (and at the very top).
+  const header = document.querySelector<HTMLElement>('.site-header')!;
+  let lastY = window.scrollY;
+  let scrollingDown = false;
 
-    const update = () => {
-      const y = window.scrollY;
-      // Ignore tiny movements so trackpad jitter doesn't flicker the header.
-      if (Math.abs(y - lastY) > 4) {
-        scrollingUp = y < lastY;
-        lastY = y;
-      }
-      const pastHero = y > (hero?.offsetHeight ?? 0) - header.offsetHeight;
-      // Always show it while it has keyboard focus or the mobile menu is open.
-      const show = (pastHero && scrollingUp) || header.contains(document.activeElement) || nav.hasAttribute('data-open');
-      header.toggleAttribute('data-visible', show);
-    };
+  const update = () => {
+    const y = window.scrollY;
+    // Ignore tiny movements so trackpad jitter doesn't flicker the header.
+    if (Math.abs(y - lastY) > 4) {
+      scrollingDown = y > lastY;
+      lastY = y;
+    }
+    // Always show it while it has keyboard focus or the mobile menu is open.
+    const show = (scrollingDown && y > 0) || header.contains(document.activeElement) || nav.hasAttribute('data-open');
+    header.toggleAttribute('data-visible', show);
+  };
 
-    // Browsers already fire scroll events at most once per frame, so no extra throttling.
-    window.addEventListener('scroll', update, { passive: true });
-    header.addEventListener('focusin', update);
-    header.addEventListener('focusout', () => setTimeout(update));
-    update();
-  }
+  // Browsers already fire scroll events at most once per frame, so no extra throttling.
+  window.addEventListener('scroll', update, { passive: true });
+  header.addEventListener('focusin', update);
+  header.addEventListener('focusout', () => setTimeout(update));
+  update();
 </script>
 
 <style>
+  /* Auto-hide: fixed over the page and moved up out of view until data-visible is set. */
   .site-header {
     background: var(--color-white);
-  }
-  /* Auto-hide: fixed over the page and moved up out of view until data-visible is set. */
-  .site-header[data-autohide] {
     position: fixed;
     top: 0;
     left: 0;
@@ -109,12 +97,12 @@ const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
     transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   /* "none" rather than translateY(0): any transform would trap the fixed mobile menu inside the header. */
-  .site-header[data-autohide][data-visible] {
+  .site-header[data-visible] {
     transform: none;
     box-shadow: 0 1px 0 rgba(26, 26, 26, 0.06);
   }
   @media (prefers-reduced-motion: reduce) {
-    .site-header[data-autohide] {
+    .site-header {
       transition: none;
     }
   }
