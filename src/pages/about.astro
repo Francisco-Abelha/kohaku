@@ -4,21 +4,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import heroImage from '../assets/products/bamboo-scoop-matcha-composition-scaled.jpg';
 import originsImage from '../assets/products/matcha-lifestyle2-scaled.jpg';
 import sourcingImage from '../assets/journal/matcha-lifestyle3-scaled.jpg';
-import bowlCutout from '../assets/products/matcha-bowl-scaled.jpg';
-import whiskCutout from '../assets/products/matcha-whisk.jpg';
-import scoopCutout from '../assets/products/matcha-powder-scoop-scaled.jpg';
 
 // Split into words at build time, so CSS can darken them one by one while scrolling.
 const lead =
   'Kohaku exists because of a disappointing cup of matcha. Not offensively bad — worse than that. It tasted of nothing in particular: vaguely grassy, vaguely bitter, entirely anonymous. It had cost a great deal and told us nothing about where it came from.';
 const leadWords = lead.split(' ');
-
-// Decorative round crops around the headline. depth = how far each moves with the mouse.
-const cutouts = [
-  { image: bowlCutout, className: 'c-bowl', depth: 34 },
-  { image: whiskCutout, className: 'c-whisk', depth: 22 },
-  { image: scoopCutout, className: 'c-scoop', depth: 46 },
-];
 
 const gardens = [
   {
@@ -43,12 +33,6 @@ const gardens = [
   <div class="stack">
   <div class="intro first-screen">
   <canvas class="dust" aria-hidden="true"></canvas>
-
-  {cutouts.map((cutout) => (
-    <div class:list={['cutout', cutout.className]} style={`--depth: ${cutout.depth}`} aria-hidden="true">
-      <Image src={cutout.image} alt="" widths={[200, 340]} sizes="170px" />
-    </div>
-  ))}
 
   <section class="hero">
     <p class="eyebrow">Our story</p>
@@ -175,23 +159,16 @@ const gardens = [
   const canvas = intro.querySelector<HTMLCanvasElement>('.dust')!;
   const motionOK = matchMedia('(prefers-reduced-motion: no-preference)').matches;
 
-  // Mouse position over the intro, from -1 to 1 on each axis. CSS reads --mx/--my for the
-  // cutout parallax; the dust uses the pixel position to move away from the cursor.
+  // Cursor position over the intro, so the dust can move away from it.
   const pointer = { x: -9999, y: -9999 };
   if (motionOK) {
     intro.addEventListener('pointermove', (event) => {
       const r = intro.getBoundingClientRect();
       pointer.x = event.clientX - r.left;
       pointer.y = event.clientY - r.top;
-      if (event.pointerType === 'mouse') {
-        intro.style.setProperty('--mx', String((pointer.x / r.width) * 2 - 1));
-        intro.style.setProperty('--my', String((pointer.y / r.height) * 2 - 1));
-      }
     });
     intro.addEventListener('pointerleave', () => {
       pointer.x = pointer.y = -9999;
-      intro.style.setProperty('--mx', '0');
-      intro.style.setProperty('--my', '0');
     });
   }
 
@@ -317,7 +294,7 @@ const gardens = [
     flex-direction: column;
     background: var(--color-paper);
   }
-  /* margin: auto centres the hero in the screen; it sits above the dust and cutouts. */
+  /* margin: auto centres the hero in the screen; it sits above the dust. */
   .intro {
     overflow: hidden;
   }
@@ -342,47 +319,13 @@ const gardens = [
     display: inline-block;
   }
 
-  /* Dust canvas fills the intro, behind everything. */
+  /* Dust canvas fills the intro, behind the text. */
   .dust {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-  }
-
-  /* Cutouts: round crops. Parallax uses the translate property (set from --mx/--my by the
-     script), bobbing uses transform, and the entrance uses scale, so the three never clash. */
-  .cutout {
-    position: absolute;
-    z-index: 1;
-    width: var(--size);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    overflow: hidden;
-    box-shadow: 0 18px 40px rgba(26, 26, 26, 0.14);
-    translate: calc(var(--mx, 0) * var(--depth) * -1px) calc(var(--my, 0) * var(--depth) * -1px);
-    transition: translate 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
-  }
-  .cutout :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .c-bowl {
-    --size: 150px;
-    left: 9%;
-    top: 16%;
-  }
-  .c-whisk {
-    --size: 128px;
-    right: 9%;
-    top: 26%;
-  }
-  .c-scoop {
-    --size: 108px;
-    left: 15%;
-    bottom: 14%;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -400,20 +343,6 @@ const gardens = [
     .lead {
       animation: fade-up 1s cubic-bezier(0.2, 0.7, 0.2, 1) 2.2s both;
     }
-    .cutout {
-      animation:
-        pop 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) var(--delay) both,
-        bob 7s ease-in-out var(--delay) infinite;
-    }
-    .c-bowl {
-      --delay: 1.6s;
-    }
-    .c-whisk {
-      --delay: 1.85s;
-    }
-    .c-scoop {
-      --delay: 2.1s;
-    }
   }
   @keyframes rise {
     from {
@@ -424,17 +353,6 @@ const gardens = [
     from {
       opacity: 0;
       transform: translateY(14px);
-    }
-  }
-  @keyframes pop {
-    from {
-      opacity: 0;
-      scale: 0.85;
-    }
-  }
-  @keyframes bob {
-    50% {
-      transform: translateY(-10px);
     }
   }
 
@@ -464,24 +382,6 @@ const gardens = [
     }
   }
 
-  @media (max-width: 781.98px) {
-    .c-bowl {
-      --size: 76px;
-      left: 5%;
-      top: 9%;
-    }
-    .c-whisk {
-      --size: 64px;
-      right: 6%;
-      top: 13%;
-    }
-    .c-scoop {
-      --size: 56px;
-      left: auto;
-      right: 10%;
-      bottom: 7%;
-    }
-  }
   /* Higher layer than the intro and Origins, with a soft shadow so it reads as on top. */
   .wide-wrap {
     position: relative;
