@@ -8,7 +8,7 @@ const posts = (await getCollection('journal')).sort((a, b) => b.data.date.getTim
 ---
 
 <BaseLayout title="Journal">
-  <div class="container journal">
+  <div class="container journal first-screen">
     <h1 class="visually-hidden">Journal</h1>
     <ul class="cards">
       {posts.map((post) => (

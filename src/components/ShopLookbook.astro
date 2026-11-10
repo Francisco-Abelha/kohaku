@@ -1,0 +1,413 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { categoryNames, type Category } from '../data/categories';
+import { priceRange } from '../lib/format';
+
+interface Props {
+  products: CollectionEntry<'products'>[];
+  title?: string;
+  description?: string;
+  /** Category pages: the tabs link to the other categories instead of filtering. */
+  current?: Category;
+}
+
+const { title = 'Shop', description, current } = Astro.props;
+
+const categoryOrder = Object.keys(categoryNames) as Category[];
+// Curated order: by category (single origin first), then by name.
+const products = [...Astro.props.products].sort(
+  (a, b) =>
+    categoryOrder.indexOf(a.data.category) - categoryOrder.indexOf(b.data.category) ||
+    a.data.name.localeCompare(b.data.name),
+);
+const place = (p: CollectionEntry<'products'>) =>
+  p.data.origin ? `${p.data.origin.region}, ${p.data.origin.prefecture}` : categoryNames[p.data.category];
+const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
+---
+
+<!-- Lookbook: on wide screens a photo stays fixed on the left and changes to whichever product
+     row crosses the middle of the screen. On phones, and without JavaScript, every row shows
+     its own photo. -->
+<section class="lookbook first-screen" data-lookbook>
+  <header class="intro container">
+    <div>
+      <h1>{title}</h1>
+      {description && <p class="description">{description}</p>}
+    </div>
+    <p class="count" role="status">{countText(products.length)}</p>
+  </header>
+
+  <div class="layout container">
+    <div class="side">
+      <div class="side-inner">
+        {current ? (
+          <nav class="tabs" aria-label="Categories">
+            <a href="/shop/">All</a>
+            {Object.entries(categoryNames).map(([slug, name]) => (
+              <a href={`/product-category/${slug}/`} aria-current={slug === current ? 'page' : undefined}>{name}</a>
+            ))}
+          </nav>
+        ) : (
+          // Hidden until the script runs, so the buttons never show without JavaScript.
+          <div class="tabs" role="group" aria-label="Filter by category" hidden>
+            {[['all', 'All'], ...Object.entries(categoryNames)].map(([slug, name]) => (
+              <button type="button" data-filter={slug} aria-pressed={slug === 'all' ? 'true' : 'false'}>{name}</button>
+            ))}
+          </div>
+        )}
+        <!-- Decorative copies of the row photos; the rows carry the real alt text. -->
+        <div class="stage" aria-hidden="true">
+          {products.map((product) => (
+            <figure data-product={product.id}>
+              <Image src={product.data.images[0].src} alt="" widths={[640, 1100]} sizes="45vw" />
+            </figure>
+          ))}
+        </div>
+        <p class="counter" aria-hidden="true"></p>
+      </div>
+    </div>
+
+    <ol class="rows">
+      {products.map((product) => (
+        <li class="row" data-product={product.id} data-category={product.data.category} data-place={place(product)} data-reveal>
+          <div class="row-photo">
+            <Image
+              src={product.data.images[0].src}
+              alt={product.data.images[0].alt}
+              widths={[480, 960]}
+              sizes="(max-width: 899px) 88vw, 45vw"
+            />
+          </div>
+          <div class="text">
+            <p class="place"><span class="num"></span>{place(product)}</p>
+            <h2><a href={`/product/${product.id}/`}><span>{product.data.name}</span></a></h2>
+            <p class="summary">{product.data.summary}</p>
+            <p class="meta">
+              <strong>{priceRange(product.data.variants)}</strong>
+              {product.data.variants.length > 1 && <span>{product.data.variants.map((v) => v.label).join(' · ')}</span>}
+            </p>
+            <a class="button" href={`/product/${product.id}/`} tabindex="-1" aria-hidden="true">View product</a>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-lookbook]');
+  if (root) {
+    root.classList.add('js');
+    const rows = [...root.querySelectorAll<HTMLElement>('.row')];
+    const stage = root.querySelector<HTMLElement>('.stage')!;
+    const figures = new Map([...stage.querySelectorAll<HTMLElement>('figure')].map((f) => [f.dataset.product!, f]));
+    const counter = root.querySelector<HTMLElement>('.counter')!;
+    const count = root.querySelector<HTMLElement>('.count')!;
+    const tabGroup = root.querySelector<HTMLElement>('.tabs')!;
+    const tabs = [...tabGroup.querySelectorAll<HTMLButtonElement>('button')]; // none on category pages
+    const categories = new Set(tabs.map((t) => t.dataset.filter));
+    const motionOK = matchMedia('(prefers-reduced-motion: no-preference)').matches;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    let active: HTMLElement | undefined;
+
+    // Show a row's photo on the stage. The new photo unmasks over the previous one, from below
+    // when scrolling down and from above when scrolling up.
+    const activate = (row: HTMLElement) => {
+      if (row === active) return;
+      stage.dataset.dir = active && rows.indexOf(row) < rows.indexOf(active) ? 'up' : 'down';
+      figures.forEach((f) => f.classList.remove('was'));
+      if (active) {
+        figures.get(active.dataset.product!)!.classList.replace('active', 'was');
+        active.classList.remove('current');
+      }
+      // Reading layout applies the hidden side (above or below) before the photo animates in.
+      void stage.offsetHeight;
+      figures.get(row.dataset.product!)!.classList.add('active');
+      row.classList.add('current');
+      active = row;
+      updateCounter();
+    };
+    const updateCounter = () => {
+      const visible = rows.filter((r) => !r.hidden);
+      counter.textContent = `${pad(visible.indexOf(active!) + 1)} / ${pad(visible.length)} · ${active!.dataset.place}`;
+    };
+
+    // A row becomes active when it crosses the horizontal middle of the screen.
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && activate(e.target as HTMLElement)),
+      { rootMargin: '-50% 0px -50% 0px' },
+    );
+    rows.forEach((row) => observer.observe(row));
+    activate(rows[0]);
+    // Clicking a row shows its photo at once, so it's the one that morphs into the product page.
+    rows.forEach((row) => row.addEventListener('click', () => activate(row)));
+
+    let category = new URLSearchParams(location.search).get('category') ?? 'all';
+    const render = () => {
+      if (!categories.has(category)) category = 'all';
+      rows.forEach((row) => (row.hidden = category !== 'all' && row.dataset.category !== category));
+      tabs.forEach((tab) => tab.setAttribute('aria-pressed', String(tab.dataset.filter === category)));
+      const visible = rows.filter((r) => !r.hidden);
+      count.textContent = visible.length === 1 ? '1 product' : `${visible.length} products`;
+      if (active?.hidden) activate(visible[0]);
+      else updateCounter();
+      // Scrolled down a long list that just got shorter: go back to its top.
+      if (root.getBoundingClientRect().top < 0) root.querySelector('.layout')!.scrollIntoView();
+    };
+
+    tabGroup.hidden = false;
+    if (tabs.length) render();
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => {
+        category = tab.dataset.filter!;
+        // Keep the filter in the address so a filtered view can be shared.
+        history.replaceState(null, '', category === 'all' ? location.pathname : `?category=${category}`);
+        // A crossfade hides the list changing (and any jump back to its top).
+        if (motionOK && document.startViewTransition) document.startViewTransition(render);
+        else render();
+      });
+    }
+  }
+</script>
+
+<style>
+  .lookbook {
+    padding: 60px 0 100px;
+  }
+  .intro {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(64px, 10vw, 150px);
+    line-height: 0.9;
+  }
+  .description {
+    max-width: 60ch;
+    /* Clears the heading's descenders (the g's in "Single Origin"). */
+    margin: 0.9em 0 0;
+    font-size: 17px;
+    line-height: 1.8;
+  }
+  .count,
+  .place,
+  .counter {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-stone-strong);
+  }
+
+  /* Filter tabs: plain words; the chosen one is ink with an underline that draws in. */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+    margin-bottom: 24px;
+  }
+  .tabs[hidden] {
+    display: none;
+  }
+  .tabs button,
+  .tabs a {
+    padding: 4px 0;
+    text-decoration: none;
+    border: 0;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    color: var(--color-stone-strong);
+    font: 500 12px/1.5 var(--font-body);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+      color 0.3s ease,
+      background-size 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .tabs button:hover,
+  .tabs a:hover {
+    color: var(--color-ink);
+  }
+  .tabs button[aria-pressed='true'],
+  .tabs a[aria-current='page'] {
+    color: var(--color-ink);
+    background-size: 100% 1px;
+  }
+
+  /* The stage and counter only exist on wide screens with JavaScript (below). */
+  .stage,
+  .counter {
+    display: none;
+  }
+
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    /* Numbers come from a CSS counter; hidden (filtered-out) rows don't count, so the
+       visible ones always read 01, 02, 03… */
+    counter-reset: row;
+  }
+  .row {
+    counter-increment: row;
+    display: grid;
+    gap: 24px;
+    padding-block: 48px;
+    border-top: 1px solid rgb(139 132 120 / 0.35);
+  }
+  .row[hidden] {
+    display: none;
+  }
+  .row-photo :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .num::before {
+    content: counter(row, decimal-leading-zero);
+    margin-right: 14px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0;
+    /* Cormorant's default old-style figures make "01" read like "OI". */
+    font-variant-numeric: lining-nums;
+    color: var(--color-matcha);
+  }
+  h2 {
+    margin: 10px 0 16px;
+    font-size: clamp(34px, 3.8vw, 58px);
+    line-height: 1.08;
+  }
+  h2 a {
+    text-decoration: none;
+  }
+  /* Same underline as the product cards: a 1px background that grows under the name. */
+  h2 span {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  h2 a:hover span,
+  h2 a:focus-visible span {
+    background-size: 100% 1px;
+  }
+  .summary {
+    max-width: 40ch;
+    margin: 0 0 16px;
+    font-size: 18px;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    margin: 0 0 28px;
+  }
+  .meta span {
+    color: var(--color-stone-strong);
+  }
+
+  /* Wide screens without JavaScript: photo and text side by side in each row. */
+  @media (min-width: 900px) {
+    .row {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 5vw;
+    }
+
+    /* Wide screens with JavaScript: the photo column becomes one fixed stage. */
+    .js .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      gap: 6vw;
+    }
+    .js .side-inner {
+      position: sticky;
+      /* Clears the nav when it slides in. */
+      top: 104px;
+      height: calc(100svh - 128px);
+      display: flex;
+      flex-direction: column;
+    }
+    .js .stage {
+      display: block;
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+      background: var(--color-sand);
+    }
+    .js .counter {
+      display: block;
+      margin-top: 14px;
+    }
+    .js .row {
+      display: flex;
+      align-items: center;
+      /* Each product holds the screen for a moment before the next photo comes in. */
+      min-height: 78svh;
+      /* Dividers would float alone beside the fixed photo. */
+      border-top: 0;
+    }
+    .js .row[hidden] {
+      display: none;
+    }
+    .js .row-photo {
+      display: none;
+    }
+    .js .text {
+      opacity: 0.28;
+      transition: opacity 0.6s ease;
+    }
+    .js .current .text,
+    .js .text:focus-within {
+      opacity: 1;
+    }
+  }
+
+  /* Stage photos are stacked. Hidden ones are clipped away on one side; the active one
+     unmasks over the previous one ("was"), and settles from a slight zoom. */
+  .stage figure {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    clip-path: inset(100% 0 0 0);
+  }
+  .stage[data-dir='up'] figure {
+    clip-path: inset(0 0 100% 0);
+  }
+  .stage figure :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    scale: 1.12;
+  }
+  .stage figure.was {
+    z-index: 1;
+    clip-path: inset(0);
+  }
+  .stage figure.active {
+    z-index: 2;
+    clip-path: inset(0);
+    transition: clip-path 0.9s cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  .stage figure.active :global(img),
+  .stage figure.was :global(img) {
+    scale: 1;
+    transition: scale 1.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stage figure.active,
+    .stage figure.active :global(img),
+    .js .text {
+      transition: none;
+    }
+    .stage figure :global(img) {
+      scale: 1;
+    }
+  }
+</style>

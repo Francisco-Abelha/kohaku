@@ -48,6 +48,20 @@
 **Alternative:** build every phase 1 page with two sample products and import afterwards.
 **Why:** building against the real content lets us compare each page with the live site as we go.
 
+## Motion with native CSS and small scripts, no animation library
+
+**Chose:** CSS transitions and keyframes for load-in motion, CSS scroll-driven animations (`animation-timeline`) for scroll effects, and small scripts only where behaviour depends on scroll direction. Everything is disabled under `prefers-reduced-motion`.
+**Alternatives:** GSAP with ScrollTrigger, Lenis for smooth scrolling, Framer Motion.
+**Why:** the effects so far don't need a timeline library, and zero added JavaScript keeps the Lighthouse comparison strong. Browsers without scroll-driven animations (Firefox, for now) simply show the final state. GSAP stays the next step for pinned sections or long choreographed sequences.
+**Gotcha:** Astro's CSS minifier folds `animation-timeline` into the `animation` shorthand, which Chrome rejects. Scroll-driven animations must use the `animation-*` longhands.
+
+## Native cross-document page transitions
+
+**Chose:** the browser's View Transitions API for navigations between pages (`@view-transition { navigation: auto; }`), with the clicked product card's photo morphing into the product page's gallery and back.
+**Alternative:** Astro's `<ClientRouter />`, which swaps pages in with JavaScript.
+**Why:** no added JavaScript, and every page still loads normally, so the existing scripts need no changes. Firefox simply navigates without the animation. `<ClientRouter />` becomes worth it if the phase 3 cart should persist across pages (`transition:persist`).
+**Details:** only the clicked card's photo gets the `product-image` name, set on click; arriving back from a product page, a `pagereveal` script tags the matching card. Names are cleared after each transition, because pages restored from the back/forward cache keep them. Only the incoming snapshot is shown during the morph, because both are the same photo cropped differently and a crossfade looks ghosted.
+
 ## Product tabs as plain text with **bold**
 
 **Chose:** the extra product tabs (Tasting Notes, How to Prepare, Care) are stored in each product's JSON as text: paragraphs separated by blank lines, with `**bold**` as the only formatting. `src/lib/text.ts` escapes the text and turns it into HTML.
@@ -71,3 +85,15 @@
 **Chose:** Astro's built-in Fonts API downloads Inter and Cormorant Garamond from Google at build time and serves them from our domain.
 **Alternatives:** a Google Fonts `<link>`, as WordPress uses; `@fontsource` npm packages.
 **Why:** visitors make no request to Google, which is faster and avoids sending EU visitors' IP addresses to a third party. It adds no dependency. Cormorant Garamond loads only weight 600, as on WordPress, so the text renders the same.
+
+## Shop page as a lookbook with a fixed photo
+
+**Chose:** one list of rich product rows beside a fixed photo that changes as each row crosses the middle of the screen (IntersectionObserver). Phones and no-JavaScript visitors get a photo in every row. Category pages use the same lookbook, with links to the other categories in place of the filter tabs.
+**Alternatives:** a hover-photo category index, a pinned horizontal strip and a filterable grid (built, then dropped: the hover photos felt gimmicky and the strip held the scroll hostage); a broken grid; category chapters.
+**Why:** it feels editorial without taking control of the scroll. The page always scrolls normally, and the photo only reacts to where you are.
+
+## Deploying to both Netlify and Vercel, for now
+
+**Chose:** connect the repo to Vercel as well as Netlify; each builds every push independently.
+**Alternatives:** stay on Netlify only; move to Vercel only.
+**Why:** Vercel has a connector to a phone app used to check on the site, and running both gives a side-by-side comparison for the agency. The static site needs no host-specific code, so this costs nothing. Phase 3's checkout functions are built for one host through Astro's adapter, so the choice is made there. Vercel's free plan is non-commercial only, which is fine for Kohaku but not for the client sites.

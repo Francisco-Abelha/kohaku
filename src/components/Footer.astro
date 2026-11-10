@@ -12,11 +12,12 @@ const kohakuLinks = [
 const year = new Date().getFullYear();
 ---
 
+<!-- Revealed from underneath: the footer sticks to the bottom of the screen behind <main>,
+     which scrolls up off it like a lifted sheet (styles in global.css and below). -->
 <footer class="site-footer">
   <div class="container columns">
     <div>
-      <p class="brand">Kohaku</p>
-      <p class="tagline">single-origin matcha</p>
+      <p class="closing">Matcha, considered.</p>
       <p class="blurb">Shade-grown matcha from four Japanese gardens, kept separate and sold young.</p>
     </div>
 
@@ -35,41 +36,54 @@ const year = new Date().getFullYear();
     </nav>
   </div>
 
-  <div class="container copyright">© {year} Kohaku</div>
+  <!-- Giant wordmark; it rises into place as the footer comes into view. -->
+  <p class="mark" aria-hidden="true">Kohaku</p>
+
+  <div class="container copyright">
+    <span>© {year} Kohaku</span>
+    <span>Concept store · no real orders are taken</span>
+  </div>
 </footer>
 
 <style>
   .site-footer {
+    overflow: hidden;
     background: var(--color-sand);
-    /* Fluid size from the WordPress blocks: 14px on phones up to 15px on desktop. */
-    --footer-text: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.078), 15px);
+  }
+  /* Only where the whole footer (about 630px) fits on screen: a stuck footer taller than
+     the screen could never show its top. */
+  @media (min-height: 700px) {
+    .site-footer {
+      position: sticky;
+      bottom: 0;
+    }
   }
   .columns {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 2fr 1fr 1fr;
     gap: 50px;
-    padding: 70px 0;
+    padding: 90px 0 40px;
   }
 
-  .brand {
-    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.469), 20px);
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-  }
-  .tagline {
-    font-size: var(--footer-text);
-    font-style: italic;
-    color: var(--color-stone);
+  .closing {
+    margin: 0 0 16px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 1.05;
   }
   .blurb {
+    max-width: 36ch;
     margin: 0;
-    font-size: var(--footer-text);
+    font-size: 15px;
     line-height: 1.75;
+    color: var(--color-stone-strong);
   }
 
   h2 {
     margin: 0 0 1em;
-    font-size: 13px;
+    font-family: var(--font-body);
+    font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -79,31 +93,68 @@ const year = new Date().getFullYear();
     list-style: none;
     margin: 0;
     padding: 0;
-    font-size: var(--footer-text);
+    font-size: 15px;
     line-height: 2;
   }
   a {
     text-decoration: none;
   }
 
+  .mark {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    /* Wide enough to span the screen: 6 letters plus their letter-spacing. */
+    font-size: 21vw;
+    line-height: 0.8;
+    letter-spacing: 0.06em;
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--color-matcha);
+    opacity: 0.9;
+    white-space: nowrap;
+  }
+
   .copyright {
-    padding: 25px 0;
-    font-size: 15px;
-    line-height: 1.3;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 24px;
+    padding: 22px 0;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--color-stone-strong);
+  }
+
+  /* The wordmark rises during the first 400px of <main> lifting off the footer (the
+     --page-end timeline is <main>'s, see global.css). Longhands: the minifier would fold
+     animation-timeline into the shorthand, which Chrome rejects. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .mark {
+        animation-name: mark-rise;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --page-end;
+        animation-range-start: exit 0px;
+        animation-range-end: exit 400px;
+      }
+    }
+  }
+  @keyframes mark-rise {
+    from {
+      translate: 0 45%;
+      opacity: 0;
+    }
   }
 
   @media (max-width: 999.98px) {
     .columns {
-      grid-template-columns: 1fr;
-      padding: 50px 0;
+      grid-template-columns: 1fr 1fr;
+      padding: 60px 0 32px;
     }
-    .copyright {
-      padding: 15px 0;
-    }
-  }
-  @media (max-width: 689px) {
-    .columns {
-      padding: 40px 0;
+    .columns > div {
+      grid-column: 1 / -1;
     }
   }
 </style>

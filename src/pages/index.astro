@@ -25,16 +25,42 @@ const tiles = [
 ];
 ---
 
-<BaseLayout>
+<BaseLayout fullScreenHero>
   <section class="hero">
-    <h1>Matcha, considered.</h1>
-    <p>Single-origin, stone-milled, and shipped within weeks of harvest.</p>
-    <div class="actions">
-      <a class="button" href="/product-category/single-origin/">Shop Single Origin</a>
-      <a class="button ghost" href="/shop/">All Tea</a>
+    <!-- Ensō: a brush circle, drawn on load. The filter roughens the edges like a brush stroke. -->
+    <svg class="enso" viewBox="0 0 400 400" aria-hidden="true">
+      <defs>
+        <filter id="enso-brush">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" />
+          <feDisplacementMap in="SourceGraphic" scale="9" />
+        </filter>
+      </defs>
+      <path d="M254.7 49.6 A160 156 -8 1 1 172.2 42.4" pathLength="1" filter="url(#enso-brush)" />
+    </svg>
+
+    <div class="hero-content">
+      <!-- Each word rises inside its own clipping window; --i sets its place in the sequence.
+           {' '} is the space between words: Astro drops the line break between the tags. -->
+      <h1>
+        <span class="word"><span style="--i: 0">Matcha,</span></span>{' '}<span class="word"><span style="--i: 1">considered.</span></span>
+      </h1>
+      <p class="intro-in" style="--d: 0.8s">Single-origin, stone-milled, and shipped within weeks of harvest.</p>
+      <div class="actions intro-in" style="--d: 1s">
+        <a class="button" href="/product-category/single-origin/">Shop Single Origin</a>
+        <a class="button ghost" href="/shop/">All Tea</a>
+      </div>
+    </div>
+
+    <div class="frame">
+      <p class="corner tl">Uji · Nishio · Yame</p>
+      <p class="corner tr">First harvest only</p>
+      <p class="corner bl">Est. 2023</p>
+      <span class="corner br scroll" aria-hidden="true">Scroll</span>
     </div>
   </section>
 
+  <!-- The layer wrapper puts the photo above "Our story", which slides out from under it. -->
+  <div class="cover-layer">
   <div class="cover">
     <Image
       src={heroImage}
@@ -43,6 +69,7 @@ const tiles = [
       sizes="100vw"
       loading="eager"
     />
+  </div>
   </div>
 
   <section class="section story">
@@ -66,14 +93,14 @@ const tiles = [
   </section>
 
   <section class="section">
-    <h2 class="centered">Where to start</h2>
-    <p class="intro">Three single-origin gardens and one everyday bowl.</p>
-    <ul class="product-grid inner">
+    <h2 class="centered" data-reveal>Where to start</h2>
+    <p class="intro" data-reveal>Three single-origin gardens and one everyday bowl.</p>
+    <ul class="product-grid inner" data-reveal="stagger">
       {featured.map((product) => <li><ProductCard product={product} /></li>)}
     </ul>
   </section>
 
-  <section class="section tiles" aria-label="Shop by category">
+  <section class="section tiles" aria-label="Shop by category" data-reveal="stagger">
     {tiles.map((tile) => (
       <div class="tile">
         <Image src={tile.image} alt={tile.alt} widths={[400, 800]} sizes="(max-width: 781px) 88vw, 380px" />
@@ -84,8 +111,8 @@ const tiles = [
   </section>
 
   <section class="section">
-    <h2 class="centered journal-title">From the Journal</h2>
-    <ul class="posts inner">
+    <h2 class="centered journal-title" data-reveal>From the Journal</h2>
+    <ul class="posts inner" data-reveal="stagger">
       {posts.map((post) => (
         <li>
           <a href={`/${post.id}/`} tabindex="-1" aria-hidden="true">
@@ -98,7 +125,7 @@ const tiles = [
     </ul>
   </section>
 
-  <section class="signup-section">
+  <section class="signup-section" data-reveal>
     <hr />
     <h2>Brewing guides and seasonal launches</h2>
     <p>A short letter when a new harvest lands. Nothing else.</p>
@@ -135,16 +162,157 @@ const tiles = [
     margin-bottom: 52px;
   }
 
+  /* Exactly one screen tall: svh ignores mobile browser bars, so nothing below peeks in. */
   .hero {
-    padding: clamp(80px, 11vw, 150px) 24px clamp(64px, 8vw, 110px);
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 110px 24px 90px;
     text-align: center;
+    overflow: hidden;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .enso {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(80svh, 94vw);
+    transform: translate(-50%, -50%) rotate(-8deg);
+  }
+  .enso path {
+    fill: none;
+    stroke: var(--color-matcha);
+    stroke-opacity: 0.16;
+    stroke-width: 16;
+    stroke-linecap: round;
+    /* With pathLength="1", one dash covers the whole circle; shifting it by 1 hides it. */
+    stroke-dasharray: 1;
+  }
+
+  .frame {
+    position: absolute;
+    inset: 70px 0 32px;
+    width: var(--container);
+    margin-inline: auto;
+    pointer-events: none;
+  }
+  .corner {
+    position: absolute;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    line-height: 1.5;
+    text-transform: uppercase;
+    color: var(--color-stone-strong);
+  }
+  .tl {
+    top: 0;
+    left: 0;
+  }
+  .tr {
+    top: 0;
+    right: 0;
+  }
+  .bl {
+    bottom: 0;
+    left: 0;
+  }
+  .br {
+    bottom: 0;
+    right: 0;
+  }
+  .scroll {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .scroll::after {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: currentColor;
+  }
+
+  /* Each word is a window with overflow hidden; the padding keeps the comma's tail inside it. */
+  .word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+  .word > span {
+    display: inline-block;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .word > span {
+      animation: rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-delay: calc(0.35s + var(--i) * 0.14s);
+    }
+    /* Subtitle and buttons use their own --d; the corner details follow last. */
+    .intro-in,
+    .corner {
+      animation: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-delay: var(--d, 1.3s);
+    }
+    .enso path {
+      animation: draw 2.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s both;
+    }
+    .scroll::after {
+      animation: cue 2.4s ease-in-out infinite;
+    }
+  }
+  @keyframes rise {
+    from {
+      transform: translateY(110%);
+    }
+  }
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+      opacity: 0;
+    }
+    5% {
+      opacity: 1;
+    }
+  }
+  /* The line grows from the left, then shrinks away to the right. */
+  @keyframes cue {
+    0% {
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+    50% {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+    51% {
+      transform-origin: right;
+    }
+    100% {
+      transform: scaleX(0);
+      transform-origin: right;
+    }
   }
   .hero h1 {
     font-size: clamp(44px, 7vw, 78px);
     line-height: 1.12;
     margin-bottom: 26px;
   }
-  .hero p {
+  .hero-content p {
     font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.391), 19px);
     line-height: 1.65;
     margin-bottom: 44px;
@@ -161,6 +329,9 @@ const tiles = [
   .cover {
     position: relative;
     min-height: 100vh;
+    overflow: hidden;
+    /* Names this element's scroll progress, so animations can follow it. */
+    view-timeline-name: --cover;
   }
   .cover :global(img) {
     position: absolute;
@@ -168,6 +339,81 @@ const tiles = [
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  /* Scroll-driven reveal: the photo unmasks and settles as it scrolls into view.
+     Browsers without scroll-driven animations simply show it in its final state. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      /* Longhands on purpose: the CSS minifier folds animation-timeline into the
+         "animation" shorthand, which Chrome rejects, so the shorthand can't be used here. */
+      .cover {
+        animation-name: unmask;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --cover;
+        animation-range: entry 0% cover 45%;
+      }
+      .cover :global(img) {
+        animation-name: settle;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --cover;
+        animation-range: entry 0% cover 60%;
+      }
+    }
+  }
+  /* Bottom layering: the photo sits above "Our story", which starts tucked under it. */
+  .cover-layer {
+    position: relative;
+    z-index: 1;
+  }
+  /* Shadow strip under the photo's bottom edge. A box-shadow would be cut off by the
+     clip-path reveal above, so it lives on the wrapper instead. */
+  .cover-layer::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 48px;
+    background: linear-gradient(rgba(26, 26, 26, 0.16), rgba(26, 26, 26, 0));
+    pointer-events: none;
+  }
+  .story {
+    position: relative;
+    z-index: 0;
+  }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .story {
+        animation-name: from-under;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 100%;
+      }
+    }
+  }
+  @keyframes from-under {
+    from {
+      transform: translateY(-35%);
+    }
+  }
+  @keyframes unmask {
+    from {
+      clip-path: inset(10% 14%);
+    }
+    to {
+      clip-path: inset(0);
+    }
+  }
+  @keyframes settle {
+    from {
+      transform: scale(1.2);
+    }
+    to {
+      transform: scale(1);
+    }
   }
 
   .story {

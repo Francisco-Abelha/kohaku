@@ -24,7 +24,7 @@ The first version of Kohaku was built with WordPress and WooCommerce. It looked 
 | | WordPress version | This version |
 |---|---|---|
 | Platform | WordPress + WooCommerce | Astro + TypeScript |
-| Hosting | _[current host]_ | Netlify |
+| Hosting | _[current host]_ | Netlify and Vercel (until phase 3) |
 | Content | Database, edited in wp-admin | Markdown and JSON files in this repo |
 | Checkout | WooCommerce | Stripe Checkout (test mode) |
 | Lighthouse performance (mobile) | _[score]_ | _[score]_ |
@@ -38,7 +38,7 @@ _Measured with Lighthouse in Chrome DevTools on [date], mobile preset._
 - **TypeScript**: types for products, variants and cart items.
 - **Content collections**: products and journal posts live as files and are validated against a schema at build time.
 - **Stripe Checkout**: hosted payment page; a webhook confirms paid orders.
-- **Netlify**: every push to `main` deploys to production, and every pull request gets a deploy preview URL.
+- **Netlify** and **Vercel**: both are connected to this repo. Every push to `main` deploys to each host's production URL, and every branch and pull request gets a preview on each. Phase 3's server functions will pick one host.
 - **Python**: a one-off script that exported products and posts from the WordPress REST API.
 
 ## How it works
@@ -79,6 +79,7 @@ Requirements: Node.js (LTS) and a Stripe account in test mode.
 git clone https://github.com/Francisco-Abelha/kohaku.git
 cd kohaku
 npm install
+git config core.hooksPath .githooks   # blocks direct pushes to main (see .githooks/pre-push)
 cp .env.example .env    # add your Stripe test keys
 npm run dev             # http://localhost:4321
 ```

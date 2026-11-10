@@ -26,7 +26,7 @@ const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
     <nav id="site-nav" class="nav" aria-label="Main">
       <button class="menu-close" type="button" aria-label="Close menu">×</button>
       <ul class="menu">
-        <li class="has-sub">
+        <li class="has-sub" style="--i: 0">
           <a href="/shop/" aria-current={current('/shop/')} class:list={{ active: inShop }}>Shop</a>
           <ul class="sub">
             {categoryLinks.map((c) => (
@@ -34,8 +34,8 @@ const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
             ))}
           </ul>
         </li>
-        {links.map((l) => (
-          <li><a href={l.href} aria-current={current(l.href)}>{l.name}</a></li>
+        {links.map((l, i) => (
+          <li style={`--i: ${i + 1}`}><a href={l.href} aria-current={current(l.href)}>{l.name}</a></li>
         ))}
       </ul>
     </nav>
@@ -58,17 +58,59 @@ const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && nav.hasAttribute('data-open')) setOpen(false);
   });
+
+  // Auto-hiding header, on every page: hidden on load, revealed by scrolling down,
+  // hidden again by scrolling up (and at the very top).
+  const header = document.querySelector<HTMLElement>('.site-header')!;
+  let lastY = window.scrollY;
+  let scrollingDown = false;
+
+  const update = () => {
+    const y = window.scrollY;
+    // Ignore tiny movements so trackpad jitter doesn't flicker the header.
+    if (Math.abs(y - lastY) > 4) {
+      scrollingDown = y > lastY;
+      lastY = y;
+    }
+    // Always show it while it has keyboard focus or the mobile menu is open.
+    const show = (scrollingDown && y > 0) || header.contains(document.activeElement) || nav.hasAttribute('data-open');
+    header.toggleAttribute('data-visible', show);
+  };
+
+  // Browsers already fire scroll events at most once per frame, so no extra throttling.
+  window.addEventListener('scroll', update, { passive: true });
+  header.addEventListener('focusin', update);
+  header.addEventListener('focusout', () => setTimeout(update));
+  update();
 </script>
 
 <style>
+  /* Auto-hide: fixed over the page and moved up out of view until data-visible is set. */
   .site-header {
     background: var(--color-white);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 90;
+    transform: translateY(-100%);
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* "none" rather than translateY(0): any transform would trap the fixed mobile menu inside the header. */
+  .site-header[data-visible] {
+    transform: none;
+    box-shadow: 0 1px 0 rgba(26, 26, 26, 0.06);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .site-header {
+      transition: none;
+    }
   }
   .bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 120px;
+    height: 80px;
   }
 
   /* Wordmark, from the WordPress Additional CSS */
@@ -165,67 +207,101 @@ const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
     color: inherit;
   }
 
-  /* Mobile: the same nav becomes a dark side panel, as in Blocksy. */
+  /* Mobile: the nav becomes a full-screen paper panel that wipes down from the top, and
+     the links rise in one after another. visibility (not display) keeps it animatable and
+     still takes the closed menu out of the tab order. */
   @media (max-width: 999.98px) {
     .bar {
-      height: 70px;
+      height: 64px;
     }
     .menu-toggle {
       display: block;
     }
     .nav {
-      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      padding: 110px 8vw 48px;
+      overflow-y: auto;
+      background: var(--color-paper);
+      visibility: hidden;
+      clip-path: inset(0 0 100% 0);
+      transition:
+        clip-path 0.6s cubic-bezier(0.7, 0, 0.2, 1),
+        visibility 0s 0.6s;
     }
     .nav[data-open] {
-      display: block;
-      position: fixed;
-      inset: 0 0 0 auto;
-      width: min(500px, 100%);
-      padding: 80px 40px 40px;
-      background: rgba(18, 21, 25, 0.98);
-      box-shadow: 0 0 70px rgba(0, 0, 0, 0.35);
-      overflow-y: auto;
-      z-index: 100;
+      visibility: visible;
+      clip-path: inset(0);
+      transition: clip-path 0.6s cubic-bezier(0.7, 0, 0.2, 1);
     }
     .menu-close {
       display: block;
       position: absolute;
-      top: 20px;
-      right: 24px;
-      font-size: 32px;
+      top: 12px;
+      right: 6vw;
+      font-size: 36px;
+      font-weight: 300;
       line-height: 1;
-      color: var(--color-white);
     }
     .menu {
       flex-direction: column;
-      gap: 20px;
+      gap: 6px;
+    }
+    .menu > li {
+      opacity: 0;
+      translate: 0 40px;
+    }
+    .nav[data-open] .menu > li {
+      opacity: 1;
+      translate: 0;
+      transition:
+        opacity 0.6s ease,
+        translate 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+      transition-delay: calc(0.25s + var(--i) * 70ms);
     }
     .menu a {
-      font-size: 20px;
+      font-family: var(--font-display);
+      font-size: clamp(44px, 12vw, 72px);
+      font-weight: 600;
+      line-height: 1.15;
       text-transform: none;
-      color: var(--color-white);
     }
-    /* Matcha green is too dark on the black panel, so the current page is underlined instead. */
-    .menu a[aria-current='page'],
-    .menu a.active {
-      color: var(--color-white);
-      text-decoration: underline;
-      text-underline-offset: 6px;
+    .has-sub > a::after {
+      display: none;
     }
+    /* Categories: a small row under "Shop". */
     .sub {
-      display: block;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 20px;
       position: static;
-      padding: 12px 0 0 16px;
+      padding: 4px 0 18px;
     }
-    .sub li {
-      background: none;
-    }
+    .sub li,
     .sub li + li {
+      background: none;
       border: 0;
     }
     .sub a {
-      padding: 6px 0;
-      font-size: 16px;
+      padding: 4px 0;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-stone-strong);
+    }
+    /* The page behind doesn't scroll while the menu is open. */
+    :global(html:has(.nav[data-open])) {
+      overflow: hidden;
+    }
+  }
+  @media (max-width: 999.98px) and (prefers-reduced-motion: reduce) {
+    .nav,
+    .nav[data-open],
+    .nav[data-open] .menu > li {
+      transition: none;
     }
   }
 

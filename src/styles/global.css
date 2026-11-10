@@ -58,6 +58,16 @@ h4 { font-size: 25px; font-weight: 700; line-height: 1.5; }
 
 main {
   flex: 1;
+  /* The page is a sheet lying over the footer (Footer.astro): it scrolls up off it. */
+  position: relative;
+  z-index: 1;
+  background: var(--color-paper);
+  box-shadow: 0 24px 48px rgb(26 26 26 / 0.08);
+  view-timeline-name: --page-end;
+}
+/* Lets the footer, a sibling of <main>, use <main>'s timeline. */
+body {
+  timeline-scope: --page-end;
 }
 
 p {
@@ -112,6 +122,12 @@ img {
 .button.ghost:hover {
   background: transparent;
   color: var(--color-matcha);
+}
+
+/* Every page's first section fills at least the whole screen, so the next section
+   (and the footer) only appear after the first scroll. */
+.first-screen {
+  min-height: 100svh;
 }
 
 /* Small page title above content pages, like the WordPress theme's page header. */
@@ -180,6 +196,61 @@ img {
   .product-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Page transitions: the browser animates between pages natively (Chrome, Edge, Safari;
+   other browsers simply navigate). Named elements morph; everything else crossfades. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.4s;
+}
+/* Header and notice hold still instead of crossfading with the page. */
+.site-header {
+  view-transition-name: site-header;
+}
+.notice {
+  view-transition-name: site-notice;
+}
+/* The product photo that morphs between a card and the product page (see BaseLayout). */
+[data-vt-product] {
+  view-transition-name: product-image;
+}
+::view-transition-group(product-image) {
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* Both snapshots are the same photo cropped differently (4:3 card, 3:4 gallery), so a
+   crossfade shows two ghosted copies. Show only the incoming one, cropped to fit as it morphs. */
+::view-transition-old(product-image) {
+  display: none;
+}
+::view-transition-new(product-image) {
+  animation: none;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Scroll reveals (script in BaseLayout). Elements are only hidden once the script has added
+   .reveal-ready, so without JavaScript or with reduced motion everything simply shows.
+   data-reveal="stagger" reveals the element's children one after another. */
+.reveal-ready [data-reveal]:not([data-reveal='stagger']),
+.reveal-ready [data-reveal='stagger'] > * {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.9s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0s);
+}
+.reveal-ready [data-reveal].is-revealed:not([data-reveal='stagger']),
+.reveal-ready [data-reveal='stagger'].is-revealed > * {
+  opacity: 1;
+  transform: none;
 }
 
 /* Hidden on screen, still read by screen readers. */

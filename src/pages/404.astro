@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <!-- Netlify serves dist/404.html for any URL that doesn't exist. -->
 <BaseLayout title="Page not found">
-  <div class="container-narrow not-found">
+  <div class="container-narrow not-found first-screen">
     <h1>Oops! That page can’t be found.</h1>
     <p>It looks like nothing was found at this location. Maybe try the shop or the journal instead.</p>
     <div class="actions">
@@ -15,7 +15,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
+  /* Centred in the full first screen. */
   .not-found {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     padding: 100px 0;
     text-align: center;
   }
