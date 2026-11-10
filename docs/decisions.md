@@ -91,3 +91,9 @@
 **Chose:** one list of rich product rows beside a fixed photo that changes as each row crosses the middle of the screen (IntersectionObserver). Phones and no-JavaScript visitors get a photo in every row. Category pages keep the WordPress-style grid.
 **Alternatives:** a hover-photo category index, a pinned horizontal strip and a filterable grid (built, then dropped: the hover photos felt gimmicky and the strip held the scroll hostage); a broken grid; category chapters.
 **Why:** it feels editorial without taking control of the scroll. The page always scrolls normally, and the photo only reacts to where you are.
+
+## Deploying to both Netlify and Vercel, for now
+
+**Chose:** connect the repo to Vercel as well as Netlify; each builds every push independently.
+**Alternatives:** stay on Netlify only; move to Vercel only.
+**Why:** Vercel has a connector to a phone app used to check on the site, and running both gives a side-by-side comparison for the agency. The static site needs no host-specific code, so this costs nothing. Phase 3's checkout functions are built for one host through Astro's adapter, so the choice is made there. Vercel's free plan is non-commercial only, which is fine for Kohaku but not for the client sites.
