@@ -25,6 +25,25 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
     <Font cssVariable="--font-inter" preload />
     <Font cssVariable="--font-cormorant" preload />
     <title>{fullTitle}</title>
+    <!-- Must run before the page's first paint, so it's an inline script in <head>.
+         Arriving back from a product page: tag the matching card's photo so it morphs back into place. -->
+    <script is:inline>
+      window.addEventListener('pagereveal', (event) => {
+        // Card tags only matter during a transition. Pages restored from the back/forward
+        // cache still carry the tag from the click that left them, so clear tags afterwards.
+        const clearCardTags = () =>
+          document.querySelectorAll('[data-product] img[data-vt-product]').forEach((img) => img.removeAttribute('data-vt-product'));
+        const transition = event.viewTransition;
+        if (!transition) return clearCardTags();
+        transition.finished.finally(clearCardTags);
+
+        // Skip if a photo is already tagged (a product page's gallery, or a restored page).
+        if (document.querySelector('[data-vt-product]')) return;
+        const from = window.navigation?.activation?.from?.url;
+        const id = from && new URL(from).pathname.match(/^\/product\/([^/]+)\/$/)?.[1];
+        document.querySelector(`[data-product="${id}"] img`)?.setAttribute('data-vt-product', '');
+      });
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -57,9 +76,24 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
       },
       { rootMargin: '0px 0px -12% 0px' },
     );
-    revealables.forEach((el) => observer.observe(el));
+    for (const el of revealables) {
+      // Already on screen at load (e.g. coming back mid-page): show it at once, no fade.
+      if (el.getBoundingClientRect().top < innerHeight * 0.88) el.classList.add('is-revealed');
+      else observer.observe(el);
+    }
     document.documentElement.classList.add('reveal-ready');
   }
+
+  // Page transitions, going forward: tag only the clicked card's photo, so just that
+  // one photo morphs into the product page (its gallery carries the same tag).
+  document.addEventListener('click', (event) => {
+    const link = (event.target as Element).closest('[data-product] a[href^="/product/"]');
+    const img = link?.closest('[data-product]')?.querySelector('img');
+    if (!img) return;
+    // A product page's own gallery is tagged too; names must be unique, so untag it first.
+    document.querySelectorAll('[data-vt-product]').forEach((el) => el.removeAttribute('data-vt-product'));
+    img.setAttribute('data-vt-product', '');
+  });
 
   // shortcut: forms marked data-demo only show their note, like on WordPress; phase 4 makes them real.
   for (const form of document.querySelectorAll<HTMLFormElement>('form[data-demo]')) {

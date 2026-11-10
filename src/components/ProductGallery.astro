@@ -20,6 +20,7 @@ const { images } = Astro.props;
         loading={i === 0 ? 'eager' : 'lazy'}
         hidden={i > 0}
         data-index={i}
+        data-vt-product={i === 0 ? '' : undefined}
       />
     ))}
   </div>

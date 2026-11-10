@@ -55,6 +55,13 @@
 **Why:** the effects so far don't need a timeline library, and zero added JavaScript keeps the Lighthouse comparison strong. Browsers without scroll-driven animations (Firefox, for now) simply show the final state. GSAP stays the next step for pinned sections or long choreographed sequences.
 **Gotcha:** Astro's CSS minifier folds `animation-timeline` into the `animation` shorthand, which Chrome rejects. Scroll-driven animations must use the `animation-*` longhands.
 
+## Native cross-document page transitions
+
+**Chose:** the browser's View Transitions API for navigations between pages (`@view-transition { navigation: auto; }`), with the clicked product card's photo morphing into the product page's gallery and back.
+**Alternative:** Astro's `<ClientRouter />`, which swaps pages in with JavaScript.
+**Why:** no added JavaScript, and every page still loads normally, so the existing scripts need no changes. Firefox simply navigates without the animation. `<ClientRouter />` becomes worth it if the phase 3 cart should persist across pages (`transition:persist`).
+**Details:** only the clicked card's photo gets the `product-image` name, set on click; arriving back from a product page, a `pagereveal` script tags the matching card. Names are cleared after each transition, because pages restored from the back/forward cache keep them. Only the incoming snapshot is shown during the morph, because both are the same photo cropped differently and a crossfade looks ghosted.
+
 ## Product tabs as plain text with **bold**
 
 **Chose:** the extra product tabs (Tasting Notes, How to Prepare, Care) are stored in each product's JSON as text: paragraphs separated by blank lines, with `**bold**` as the only formatting. `src/lib/text.ts` escapes the text and turns it into HTML.

@@ -13,7 +13,8 @@ const { name, images, variants, category } = product.data;
 const href = `/product/${product.id}/`;
 ---
 
-<article class="card">
+<!-- data-product lets the page-transition script find this card's photo. -->
+<article class="card" data-product={product.id}>
   <a class="main" href={href}>
     <Image
       src={images[0].src}

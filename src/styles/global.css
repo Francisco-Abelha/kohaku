@@ -182,6 +182,43 @@ img {
   }
 }
 
+/* Page transitions: the browser animates between pages natively (Chrome, Edge, Safari;
+   other browsers simply navigate). Named elements morph; everything else crossfades. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.4s;
+}
+/* Header and notice hold still instead of crossfading with the page. */
+.site-header {
+  view-transition-name: site-header;
+}
+.notice {
+  view-transition-name: site-notice;
+}
+/* The product photo that morphs between a card and the product page (see BaseLayout). */
+[data-vt-product] {
+  view-transition-name: product-image;
+}
+::view-transition-group(product-image) {
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* Both snapshots are the same photo cropped differently (4:3 card, 3:4 gallery), so a
+   crossfade shows two ghosted copies. Show only the incoming one, cropped to fit as it morphs. */
+::view-transition-old(product-image) {
+  display: none;
+}
+::view-transition-new(product-image) {
+  animation: none;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* Scroll reveals (script in BaseLayout). Elements are only hidden once the script has added
    .reveal-ready, so without JavaScript or with reduced motion everything simply shows.
    data-reveal="stagger" reveals the element's children one after another. */
