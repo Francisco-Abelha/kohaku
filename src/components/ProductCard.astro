@@ -16,13 +16,16 @@ const href = `/product/${product.id}/`;
 <!-- data-product lets the page-transition script find this card's photo. -->
 <article class="card" data-product={product.id}>
   <a class="main" href={href}>
-    <Image
-      src={images[0].src}
-      alt={images[0].alt}
-      widths={[400, 800]}
-      sizes="(max-width: 689px) 88vw, (max-width: 999px) 45vw, 290px"
-    />
-    <h3>{name}</h3>
+    <!-- The frame clips the photo, so it can zoom on hover without the card changing size. -->
+    <div class="photo">
+      <Image
+        src={images[0].src}
+        alt={images[0].alt}
+        widths={[400, 800]}
+        sizes="(max-width: 689px) 88vw, (max-width: 999px) 45vw, 290px"
+      />
+    </div>
+    <h3><span>{name}</span></h3>
     <p class="price">{priceRange(variants)}</p>
   </a>
   <a class="category" href={`/product-category/${category}/`}>{categoryNames[category]}</a>
@@ -42,20 +45,50 @@ const href = `/product/${product.id}/`;
     text-decoration: none;
     color: var(--color-ink);
   }
+  .photo {
+    overflow: hidden;
+    margin-bottom: 25px;
+  }
   /* :global because the <img> is rendered by the Image component, outside this component's scope. */
   .main :global(img) {
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
-    margin-bottom: 25px;
+    transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   h3 {
     font-size: 17px;
     line-height: 1.3;
     margin: 0 0 10px;
   }
-  .main:hover h3 {
+  /* The underline is a 1px-tall background that grows from 0 to full width; unlike a
+     border it follows the text, even when the name wraps onto two lines. */
+  h3 span {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .main:hover h3,
+  .main:focus-visible h3 {
     color: var(--color-matcha);
+  }
+
+  /* Only on devices that can really hover; on touch screens the effect would stick after a tap.
+     :focus-visible gives keyboard users the same effect. */
+  @media (hover: hover) {
+    .main:hover :global(img),
+    .main:focus-visible :global(img) {
+      transform: scale(1.05);
+    }
+    .main:hover h3 span,
+    .main:focus-visible h3 span {
+      background-size: 100% 1px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .main :global(img) {
+      transition: none;
+      transform: none !important;
+    }
   }
   .price {
     font-size: 15px;
