@@ -2,7 +2,7 @@
 
 ## What this project is
 
-Kohaku is a concept matcha brand I designed. The current site, https://shopkohaku.com, runs on WordPress and WooCommerce. This repo rebuilds it as a custom **Astro + TypeScript** site, deployed on **Vercel**.
+Kohaku is a concept matcha brand I designed. The current site, https://shopkohaku.com, runs on WordPress and WooCommerce. This repo rebuilds it as a custom **Astro + TypeScript** site, deployed on **Netlify**.
 
 It is a portfolio project. The goal is a faster site that I understand completely and can explain in an interview. It is also practice before I migrate two real business sites the same way.
 
@@ -24,7 +24,7 @@ It is a portfolio project. The goal is a faster site that I understand completel
 - **Content collections**: products as JSON, journal posts as Markdown, validated with schemas in `src/content.config.ts` (or wherever the current Astro version expects it; check the docs)
 - **Plain CSS** with custom properties for the brand's colours and type. No CSS framework unless we decide otherwise.
 - **Stripe Checkout** (test mode), with a webhook endpoint (phase 3)
-- **Vercel**: hosting, preview deployments, serverless functions
+- **Netlify**: hosting, deploy previews for pull requests, serverless functions (phase 3)
 - **Python 3**: `scripts/export_wordpress.py` for migrating content
 
 ## Phases
@@ -32,7 +32,7 @@ It is a portfolio project. The goal is a faster site that I understand completel
 1. **Static site**: layout, header and footer, home, shop, category pages, product pages with variants, about, contact. Content comes from files.
 2. **Content migration**: Python script exports products and journal posts from WordPress into `src/content/`, then the journal pages.
 3. **Cart and checkout**: client-side cart island, then Stripe Checkout (test mode) and the webhook.
-4. **Launch**: newsletter and contact forms, SEO metadata, redirects from old WordPress URLs, Lighthouse comparison, then move the domain to Vercel.
+4. **Launch**: newsletter and contact forms, SEO metadata, redirects from old WordPress URLs, Lighthouse comparison, then move the domain to Netlify.
 
 Order change (2026-11-10): the phase 2 content import runs right after the phase 1 layout, so pages are built against real content. The rebuild is a faithful copy of the WordPress design, with the same URLs.
 

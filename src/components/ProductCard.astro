@@ -1,0 +1,71 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { categoryNames } from '../data/categories';
+import { priceRange } from '../lib/format';
+
+interface Props {
+  product: CollectionEntry<'products'>;
+}
+
+const { product } = Astro.props;
+const { name, images, variants, category } = product.data;
+const href = `/product/${product.id}/`;
+---
+
+<article class="card">
+  <a class="main" href={href}>
+    <Image
+      src={images[0].src}
+      alt={images[0].alt}
+      widths={[400, 800]}
+      sizes="(max-width: 689px) 88vw, (max-width: 999px) 45vw, 290px"
+    />
+    <h3>{name}</h3>
+    <p class="price">{priceRange(variants)}</p>
+  </a>
+  <a class="category" href={`/product-category/${category}/`}>{categoryNames[category]}</a>
+  <!-- shortcut: always links to the product page; phase 3 turns single-variant buttons into "Add to cart". -->
+  <a class="button" href={href}>{variants.length > 1 ? 'Select options' : 'View product'}</a>
+</article>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .main {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    color: var(--color-ink);
+  }
+  /* :global because the <img> is rendered by the Image component, outside this component's scope. */
+  .main :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    margin-bottom: 25px;
+  }
+  h3 {
+    font-size: 17px;
+    line-height: 1.3;
+    margin: 0 0 10px;
+  }
+  .main:hover h3 {
+    color: var(--color-matcha);
+  }
+  .price {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  .category {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-decoration: none;
+    margin-bottom: 15px;
+  }
+</style>

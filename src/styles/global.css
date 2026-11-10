@@ -3,6 +3,8 @@
   --color-ink: #1a1a1a;
   --color-matcha: #4a5d3a;
   --color-stone: #8b8478;
+  /* Darker stone for small text: #8b8478 on paper is below the WCAG AA contrast minimum. */
+  --color-stone-strong: #6b655b;
   --color-paper: #f8f6f1;
   --color-white: #ffffff;
   --color-sand: #edeae2;
@@ -100,4 +102,37 @@ img {
 .button:hover {
   background: var(--color-ink);
   color: var(--color-paper);
+}
+
+/* Product grid, shared by the home and shop pages. */
+.product-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 30px;
+}
+@media (max-width: 999.98px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 689.98px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hidden on screen, still read by screen readers. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }

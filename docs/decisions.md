@@ -48,6 +48,12 @@
 **Alternative:** build every phase 1 page with two sample products and import afterwards.
 **Why:** building against the real content lets us compare each page with the live site as we go.
 
+## Netlify for hosting
+
+**Chose:** Netlify, which builds the site from GitHub and gives each pull request a deploy preview.
+**Alternative:** Vercel, as first planned.
+**Why:** the site is already connected to Netlify. For a static Astro site both work the same way. Phase 3's checkout functions will use Netlify Functions through Astro's Netlify adapter.
+
 ## Self-hosted fonts through Astro's Fonts API
 
 **Chose:** Astro's built-in Fonts API downloads Inter and Cormorant Garamond from Google at build time and serves them from our domain.
