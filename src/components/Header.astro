@@ -9,6 +9,8 @@ const links = [
 
 // Runs at build time: each page gets its own HTML, so the current link is marked without JavaScript.
 const current = (href: string) => (Astro.url.pathname === href ? 'page' : undefined);
+// Like WordPress, "Shop" stays highlighted on category and product pages.
+const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
 ---
 
 <header class="site-header">
@@ -25,7 +27,7 @@ const current = (href: string) => (Astro.url.pathname === href ? 'page' : undefi
       <button class="menu-close" type="button" aria-label="Close menu">×</button>
       <ul class="menu">
         <li class="has-sub">
-          <a href="/shop/" aria-current={current('/shop/')}>Shop</a>
+          <a href="/shop/" aria-current={current('/shop/')} class:list={{ active: inShop }}>Shop</a>
           <ul class="sub">
             {categoryLinks.map((c) => (
               <li><a href={c.href} aria-current={current(c.href)}>{c.name}</a></li>
@@ -105,7 +107,8 @@ const current = (href: string) => (Astro.url.pathname === href ? 'page' : undefi
     color: var(--color-ink);
   }
   .menu a:hover,
-  .menu a[aria-current='page'] {
+  .menu a[aria-current='page'],
+  .menu a.active {
     color: var(--color-matcha);
   }
 
@@ -201,6 +204,13 @@ const current = (href: string) => (Astro.url.pathname === href ? 'page' : undefi
       font-size: 20px;
       text-transform: none;
       color: var(--color-white);
+    }
+    /* Matcha green is too dark on the black panel, so the current page is underlined instead. */
+    .menu a[aria-current='page'],
+    .menu a.active {
+      color: var(--color-white);
+      text-decoration: underline;
+      text-underline-offset: 6px;
     }
     .sub {
       display: block;
