@@ -1,0 +1,38 @@
+{
+  "name": "Matcha Starter Kit",
+  "category": "gift-sets",
+  "summary": "Everything needed to make a proper bowl: a bamboo chasen, a stoneware chawan, a chashaku scoop and 30g of Daily Matcha. The sensible way to start, and cheaper than buying the four separately.",
+  "description": "A practical introduction to traditional matcha preparation. This set includes 30 grams of Daily Matcha, a bamboo chasen whisk, bamboo chashaku scoop, and fine mesh sifter.\n\nTogether, these tools provide everything needed to prepare a smooth bowl of matcha at home. The Daily Matcha offers a balanced, approachable flavor suitable for straight preparation or lattes, while the included utensils support proper technique from the start.\n\nA thoughtful set for those beginning a matcha practice or for anyone seeking a complete, uncomplicated preparation kit.",
+  "variants": [
+    {
+      "label": "Standard",
+      "priceCents": 9200
+    }
+  ],
+  "images": [
+    {
+      "src": "../../assets/products/matcha-lifestyle2-scaled.jpg",
+      "alt": "matcha composition"
+    },
+    {
+      "src": "../../assets/products/matcha-lifestyle-scaled.jpg",
+      "alt": "matcha composition"
+    },
+    {
+      "src": "../../assets/products/matcha-powder-scoop-scaled.jpg",
+      "alt": "matcha powder in a bamboo scoop"
+    },
+    {
+      "src": "../../assets/products/matcha-whisk2-scaled.jpg",
+      "alt": "matcha whisk"
+    },
+    {
+      "src": "../../assets/products/matcha-bowl-scaled.jpg",
+      "alt": "Whisked matcha in a pale green spouted bowl, seen from above"
+    },
+    {
+      "src": "../../assets/products/matcha-powder-background-scaled.jpg",
+      "alt": "matcha powder background"
+    }
+  ]
+}

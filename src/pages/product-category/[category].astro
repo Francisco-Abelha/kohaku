@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProductListing from '../../components/ProductListing.astro';
+import { categoryDescriptions, categoryNames, type Category } from '../../data/categories';
+
+// Runs once at build time: one page per category, e.g. /product-category/daily/.
+export function getStaticPaths() {
+  return (Object.keys(categoryNames) as Category[]).map((category) => ({
+    params: { category },
+    props: { category },
+  }));
+}
+
+interface Props {
+  category: Category;
+}
+
+const { category } = Astro.props;
+const products = await getCollection('products', (p) => p.data.category === category);
+const name = categoryNames[category];
+---
+
+<BaseLayout title={name}>
+  <ProductListing title={name} description={categoryDescriptions[category]} products={products} />
+</BaseLayout>

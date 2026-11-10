@@ -1,0 +1,65 @@
+{
+  "name": "Daily Matcha",
+  "category": "daily",
+  "grade": "Culinary",
+  "summary": "Everyday matcha for lattes, smoothies, and morning ritual. Bright, balanced, no fuss.",
+  "description": "A versatile everyday matcha intended for daily preparation, whether whisked traditionally or blended into milk, smoothies, or baking. This tea is made from a balanced blend of Japanese green teas selected for consistency, color, and flavor.\n\nThe profile is bright and approachable, with gentle vegetal notes, moderate sweetness, and enough structure to hold its character when combined with other ingredients. It is smooth rather than complex, designed to be practical and satisfying without requiring ceremony.\n\nUse 1 to 2 grams for a straightforward usucha, or increase the amount when preparing matcha lattes. It also works well in yogurt, oatmeal, and desserts where a clean green tea flavor is desired.\n\nA dependable matcha for everyday ritual: balanced, uncomplicated, and easy to return to.",
+  "tabs": [
+    {
+      "title": "Tasting Notes",
+      "body": "Straightforward and green, with more edge than the ceremonial grades — a light astringency that milk and ice smooth out rather than fight. Grassy up front, faintly nutty underneath.\n\nBuilt for volume rather than contemplation. It will not reward a quiet bowl the way a first-harvest tea does, and it is not meant to."
+    },
+    {
+      "title": "How to Prepare",
+      "body": "**Usucha — 2g · 100ml water · 80°C**\n\nSift, whisk briskly for fifteen seconds, drink. Daily Matcha tolerates hotter water than the ceremonial grades, which makes it far more practical on a weekday morning.\n\n**Latte — 3g · 40ml water · 200ml milk**\n\nWhisk the matcha into a small amount of hot water first to make a smooth concentrate, then pour over milk, hot or iced. Whisking straight into milk will leave you with clumps every time."
+    }
+  ],
+  "variants": [
+    {
+      "label": "50 g",
+      "grams": 50,
+      "priceCents": 2800
+    },
+    {
+      "label": "100 g",
+      "grams": 100,
+      "priceCents": 4500
+    },
+    {
+      "label": "200 g",
+      "grams": 200,
+      "priceCents": 7800
+    }
+  ],
+  "images": [
+    {
+      "src": "../../assets/products/daily-mockup.jpg",
+      "alt": "Kohaku Daily Matcha packaging"
+    },
+    {
+      "src": "../../assets/products/matcha-powder-scoop-scaled.jpg",
+      "alt": "matcha powder in a bamboo scoop"
+    },
+    {
+      "src": "../../assets/products/matcha-powder-background-scaled.jpg",
+      "alt": "matcha powder background"
+    },
+    {
+      "src": "../../assets/products/matcha-latte-product.jpg",
+      "alt": "iced matcha latte"
+    },
+    {
+      "src": "../../assets/products/matcha-latte-ice.jpg",
+      "alt": "iced matcha latte"
+    },
+    {
+      "src": "../../assets/products/matcha-latte-closeup-scaled.jpg",
+      "alt": "pouring matcha latte"
+    },
+    {
+      "src": "../../assets/products/matcha-latte-warm.jpg",
+      "alt": "matcha latte"
+    }
+  ],
+  "featured": true
+}

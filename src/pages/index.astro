@@ -1,16 +1,350 @@
 ---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import heroImage from '../assets/products/matcha-bowl-primary-scaled.jpg';
+import storyImage from '../assets/products/matcha-lifestyle-scaled.jpg';
+import singleOriginImage from '../assets/products/uji-mockup.jpg';
+import dailyImage from '../assets/products/matcha-latte-warm.jpg';
+import equipmentImage from '../assets/products/matcha-whisk-closeup-scaled.jpg';
+
+// The filter runs on every product; WordPress lists the featured ones by name.
+const featured = (await getCollection('products', (p) => p.data.featured)).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name),
+);
+
+const posts = (await getCollection('journal'))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+const tiles = [
+  { name: 'Single Origin', href: '/product-category/single-origin/', image: singleOriginImage, alt: 'Kohaku Ceremonial Uji matcha pouch' },
+  { name: 'Daily', href: '/product-category/daily/', image: dailyImage, alt: 'A matcha latte in a dark cup on a pale marble surface' },
+  { name: 'Equipment', href: '/product-category/equipment/', image: equipmentImage, alt: 'A bamboo chasen whisking matcha in a bowl' },
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout>
+  <section class="hero">
+    <h1>Matcha, considered.</h1>
+    <p>Single-origin, stone-milled, and shipped within weeks of harvest.</p>
+    <div class="actions">
+      <a class="button" href="/product-category/single-origin/">Shop Single Origin</a>
+      <a class="button ghost" href="/shop/">All Tea</a>
+    </div>
+  </section>
+
+  <div class="cover">
+    <Image
+      src={heroImage}
+      alt="A white speckled ceramic chawan resting on a pale surface"
+      widths={[828, 1280, 1920, 2560]}
+      sizes="100vw"
+      loading="eager"
+    />
+  </div>
+
+  <section class="section story">
+    <div class="story-text">
+      <p class="eyebrow">Our story</p>
+      <h2>Four gardens, kept apart.</h2>
+      <p>
+        Kohaku began with a small frustration: nearly every matcha sold abroad is blended, and blending averages
+        away the thing worth tasting. We work with four gardens across Uji, Nishio and Yame, and we keep each
+        harvest separate — whatever that costs us in consistency. The tea changes from one year to the next. We
+        think that is the point.
+      </p>
+      <p class="more"><a href="/about/">Read our story →</a></p>
+    </div>
+    <Image
+      src={storyImage}
+      alt="Matcha powder, a black chawan with bamboo whisk, and an iced matcha on a grey surface"
+      widths={[560, 1120]}
+      sizes="(max-width: 781px) 88vw, 524px"
+    />
+  </section>
+
+  <section class="section">
+    <h2 class="centered">Where to start</h2>
+    <p class="intro">Three single-origin gardens and one everyday bowl.</p>
+    <ul class="product-grid inner">
+      {featured.map((product) => <li><ProductCard product={product} /></li>)}
+    </ul>
+  </section>
+
+  <section class="section tiles" aria-label="Shop by category">
+    {tiles.map((tile) => (
+      <div class="tile">
+        <Image src={tile.image} alt={tile.alt} widths={[400, 800]} sizes="(max-width: 781px) 88vw, 380px" />
+        <h3>{tile.name}</h3>
+        <a href={tile.href}>Shop →</a>
+      </div>
+    ))}
+  </section>
+
+  <section class="section">
+    <h2 class="centered journal-title">From the Journal</h2>
+    <ul class="posts inner">
+      {posts.map((post) => (
+        <li>
+          <a href={`/${post.id}/`} tabindex="-1" aria-hidden="true">
+            <Image src={post.data.cover} alt="" widths={[400, 768]} sizes="(max-width: 781px) 88vw, 380px" />
+          </a>
+          <a class="post-title" href={`/${post.id}/`}>{post.data.title}</a>
+          <p>{post.data.excerpt}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="signup-section">
+    <hr />
+    <h2>Brewing guides and seasonal launches</h2>
+    <p>A short letter when a new harvest lands. Nothing else.</p>
+    <!-- shortcut: demo form like on WordPress, stores nothing; the real newsletter comes in phase 4. -->
+    <form class="signup" data-demo>
+      <label for="signup-email" class="visually-hidden">Email address</label>
+      <input id="signup-email" class="field" type="email" name="email" placeholder="Email address" required />
+      <button class="button" type="submit">Subscribe</button>
+      <p class="note" role="status" hidden>Thank you — this is a demo form and does not store your address.</p>
+    </form>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Sizes and spacing copied from the WordPress blocks' inline styles. */
+  h2 {
+    font-size: clamp(30px, 4vw, 42px);
+    line-height: 1.2;
+  }
+  .inner {
+    width: min(1180px, 100%);
+    margin-inline: auto;
+  }
+  .section {
+    padding: clamp(64px, 8vw, 112px) 24px;
+  }
+  .centered {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .intro {
+    text-align: center;
+    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.234), 17px);
+    margin-bottom: 52px;
+  }
+
+  .hero {
+    padding: clamp(80px, 11vw, 150px) 24px clamp(64px, 8vw, 110px);
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: clamp(44px, 7vw, 78px);
+    line-height: 1.12;
+    margin-bottom: 26px;
+  }
+  .hero p {
+    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.391), 19px);
+    line-height: 1.65;
+    margin-bottom: 44px;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .actions .button {
+    padding: 17px 38px;
+  }
+  .cover {
+    position: relative;
+    min-height: 100vh;
+  }
+  .cover :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .story {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 64px;
+    /* 1120px of content plus the 24px side padding. */
+    max-width: 1168px;
+    margin-inline: auto;
+    padding-block: clamp(72px, 9vw, 128px);
+  }
+  .eyebrow {
+    color: var(--color-matcha);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .story h2 {
+    margin-bottom: 24px;
+  }
+  .story-text p:not(.eyebrow):not(.more) {
+    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.234), 17px);
+    line-height: 1.75;
+    margin-bottom: 28px;
+  }
+  .more {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .more a {
+    color: var(--color-stone-strong);
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1228px;
+    margin-inline: auto;
+    padding-top: clamp(56px, 7vw, 96px);
+  }
+  .tile {
+    position: relative;
+    min-height: 420px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    color: var(--color-paper);
+    overflow: hidden;
+  }
+  .tile :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* 40% ink overlay so the white text stays readable on any photo. */
+  .tile::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 26, 26, 0.4);
+  }
+  .tile h3,
+  .tile a {
+    position: relative;
+    z-index: 1;
+  }
+  .tile h3 {
+    font-size: clamp(16.834px, 1.052rem + ((1vw - 3.2px) * 0.716), 26px);
+    line-height: 1.3;
+    margin: 0 0 10px;
+  }
+  .tile a {
+    color: var(--color-paper);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .tile a:hover {
+    text-decoration: underline;
+  }
+
+  .journal-title {
+    margin-bottom: 48px;
+  }
+  .posts {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .posts :global(img) {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    margin-bottom: 10px;
+  }
+  .post-title {
+    display: block;
+    font-size: 14px;
+    color: var(--color-stone-strong);
+    text-decoration: none;
+    margin-bottom: 6px;
+  }
+  .post-title:hover {
+    color: var(--color-matcha);
+  }
+  .posts p {
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .signup-section {
+    padding: 0 24px clamp(72px, 9vw, 120px);
+    text-align: center;
+  }
+  hr {
+    width: min(620px, 100%);
+    height: 1px;
+    border: 0;
+    background: var(--color-stone);
+    margin: 0 auto clamp(56px, 7vw, 96px);
+  }
+  .signup-section h2 {
+    font-size: clamp(26px, 3.4vw, 34px);
+    line-height: 1.25;
+    margin-bottom: 14px;
+  }
+  .signup-section > p {
+    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.156), 16px);
+    margin-bottom: 32px;
+  }
+  .signup {
+    max-width: 520px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .signup input {
+    flex: 1 1 260px;
+    width: auto;
+    min-width: 0;
+  }
+  .signup .button {
+    padding: 15px 34px;
+  }
+  .note {
+    flex-basis: 100%;
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--color-matcha);
+  }
+
+  /* WordPress stacks columns below 782px. */
+  @media (max-width: 781.98px) {
+    .story,
+    .tiles,
+    .posts {
+      grid-template-columns: 1fr;
+    }
+    .story {
+      gap: 40px;
+    }
+  }
+</style>

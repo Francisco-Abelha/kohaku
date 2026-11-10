@@ -7,7 +7,7 @@ A storefront for Kohaku, a single-origin matcha brand I designed, rebuilt from W
 **Live site:** https://shopkohaku.com
 **Original WordPress version:** _[link to an archived copy or screenshots]_
 
-![Kohaku home page](docs/screenshots/home.png)
+![Kohaku home page](docs/screenshots/home-after.jpg)
 
 ---
 
@@ -24,7 +24,7 @@ The first version of Kohaku was built with WordPress and WooCommerce. It looked 
 | | WordPress version | This version |
 |---|---|---|
 | Platform | WordPress + WooCommerce | Astro + TypeScript |
-| Hosting | _[current host]_ | Vercel |
+| Hosting | _[current host]_ | Netlify |
 | Content | Database, edited in wp-admin | Markdown and JSON files in this repo |
 | Checkout | WooCommerce | Stripe Checkout (test mode) |
 | Lighthouse performance (mobile) | _[score]_ | _[score]_ |
@@ -38,7 +38,7 @@ _Measured with Lighthouse in Chrome DevTools on [date], mobile preset._
 - **TypeScript**: types for products, variants and cart items.
 - **Content collections**: products and journal posts live as files and are validated against a schema at build time.
 - **Stripe Checkout**: hosted payment page; a webhook confirms paid orders.
-- **Vercel**: every push to `main` deploys to production, and every pull request gets a preview URL.
+- **Netlify**: every push to `main` deploys to production, and every pull request gets a deploy preview URL.
 - **Python**: a one-off script that exported products and posts from the WordPress REST API.
 
 ## How it works
@@ -55,6 +55,7 @@ Browser ──> Static pages (Astro, built at deploy time)
 
 ```
 src/
+  assets/          # product and journal images, optimised at build time
   content/
     products/      # one JSON file per product, with variants and prices
     journal/       # Markdown journal posts
@@ -64,7 +65,7 @@ src/
   pages/api/       # checkout and Stripe webhook endpoints
 scripts/
   export_wordpress.py   # migrates content out of WordPress
-public/            # images and static files
+public/            # static files served unchanged, such as favicons
 docs/
   decisions.md     # notes on the main technical choices
   screenshots/
@@ -96,9 +97,13 @@ Environment variables (see `.env.example`):
 
 ```bash
 python3 scripts/export_wordpress.py --site https://shopkohaku.com --out src/content
+python3 scripts/export_wordpress.py --skip-fetch    # convert again from raw/, no requests
+python3 -m unittest discover -s scripts             # tests for the conversions
 ```
 
-Old WordPress URLs redirect to their new paths, so existing links keep working. The redirects are listed in `vercel.json`.
+It only sends GET requests to public endpoints, and it is safe to re-run. Step 1 saves the API responses unchanged in `raw/` (gitignored). Step 2 converts them and downloads the images into `src/assets/`, listing each one's source in [`docs/image-sources.md`](docs/image-sources.md).
+
+Products, categories and journal posts keep their WordPress URLs, so existing links keep working without redirects.
 
 ## Decisions and trade-offs
 

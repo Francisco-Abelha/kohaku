@@ -1,0 +1,270 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import heroImage from '../assets/products/bamboo-scoop-matcha-composition-scaled.jpg';
+import originsImage from '../assets/products/matcha-lifestyle2-scaled.jpg';
+import sourcingImage from '../assets/journal/matcha-lifestyle3-scaled.jpg';
+
+const gardens = [
+  {
+    name: 'Uji, Kyoto',
+    text: 'River fog settles in the valleys and acts as natural shade; the soil is heavy and mineral. Deep umami with a long vegetal sweetness and almost no edge. The flavour arrives slowly and stays.',
+  },
+  {
+    name: 'Nishio, Aichi',
+    text: 'Flat alluvial ground on the Yahagi river, which floods and enriches. Brighter and more forward than Uji — less of the low savoury depth, more immediate sweetness, a cleaner finish.',
+  },
+  {
+    name: 'Yame, Fukuoka',
+    text: 'Narrow mountain valleys with sharp swings between day and night temperature. Stressed plants concentrate, and this is the boldest of the three: mineral, structured, noticeably less sweet.',
+  },
+];
+---
+
+<!-- Text and sizes copied from the WordPress About page. -->
+<BaseLayout title="About">
+  <h1 class="container page-title">About</h1>
+
+  <section class="hero">
+    <p class="eyebrow">Our story</p>
+    <h2>Nothing blended. Nothing hurried.</h2>
+    <p class="lead">
+      Kohaku exists because of a disappointing cup of matcha. Not offensively bad — worse than that. It tasted of
+      nothing in particular: vaguely grassy, vaguely bitter, entirely anonymous. It had cost a great deal and told us
+      nothing about where it came from.
+    </p>
+  </section>
+
+  <Image
+    class="wide"
+    src={heroImage}
+    alt="A white bowl of whisked matcha beside a bamboo chasen and a wooden scoop of powder"
+    widths={[828, 1280, 1920]}
+    sizes="100vw"
+  />
+
+  <section class="row first">
+    <div>
+      <h2>Origins</h2>
+      <p>
+        That bag turned out to be a blend, as most matcha sold outside Japan is. Leaf from several regions is combined
+        to hold a flavour steady from one year to the next. It is a real craft, and there is nothing dishonest about it.
+        But blending is designed to remove variation, and variation is the interesting part.
+      </p>
+      <p>
+        What followed was two years of unglamorous research: drinking a great deal of tea, writing down what we noticed,
+        and slowly working out that the differences we kept returning to were differences of place. Kohaku started
+        properly in 2023, with one garden and far too much inventory.
+      </p>
+    </div>
+    <Image
+      src={originsImage}
+      alt="Matcha powder, a black chawan and an iced matcha on a grey surface"
+      widths={[480, 960]}
+      sizes="(max-width: 781px) 88vw, 472px"
+    />
+  </section>
+
+  <section class="row reverse">
+    <Image
+      src={sourcingImage}
+      alt="A spoon of matcha powder beside a bowl and whisk, shot from above"
+      widths={[480, 960]}
+      sizes="(max-width: 781px) 88vw, 472px"
+    />
+    <div>
+      <h2>Sourcing</h2>
+      <p>We work with four growers across Uji, Nishio and Yame, and we buy from named gardens rather than from a broker’s blend.</p>
+      <p>
+        Shading is where matcha is decided. Three to four weeks before harvest the bushes are covered, cutting sunlight
+        by as much as ninety percent. The plant responds by flooding its leaves with chlorophyll and amino acids, and that
+        is where both the colour and the savoury depth come from. Shade too little and the tea is thin; shade too long and
+        it goes flat.
+      </p>
+      <p>
+        Only the first harvest goes into what we sell. Later flushes are cheaper, coarser and more astringent — and they
+        are what fills most tins on most shelves.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>The gardens</h2>
+    <p class="gardens-intro">
+      Four gardens across three regions, every harvest kept separate. Poured side by side, they are not subtly different
+      — and which one suits you tends to depend on the time of day more than anything else.
+    </p>
+    <div class="gardens">
+      {gardens.map((garden) => (
+        <div>
+          <h3 class="eyebrow">{garden.name}</h3>
+          <p>{garden.text}</p>
+        </div>
+      ))}
+    </div>
+    <p class="more"><a href="/why-origin-matters/">More on why origin matters →</a></p>
+  </section>
+
+  <section class="block last">
+    <h2>Milling</h2>
+    <p>
+      Matcha is ground between granite wheels turning slowly enough to produce thirty to forty grams in an hour. A single
+      100g bag is most of a working day.
+    </p>
+    <p>
+      The slowness is not ceremony. Friction makes heat, and heat destroys the volatile compounds that carry aroma. A fast
+      mill produces powder of roughly the right colour that tastes of comparatively little. There is no shortcut here that
+      survives tasting.
+    </p>
+    <hr />
+    <h2>What we believe</h2>
+    <p>
+      Matcha is perishable in a way most people are never told. It begins losing aroma the moment it is milled, and once
+      a bag is opened it has perhaps four to six weeks before the colour dulls and the sweetness goes with it.
+    </p>
+    <p>
+      So we buy in small quantities, hold little stock, and ship within weeks of harvest rather than months. We would
+      rather sell out of something than sell it tired.
+    </p>
+    <p>
+      Some years a garden gives us a remarkable tea. Some years it gives us a merely good one. We could smooth that out by
+      blending. We would rather tell you which year you are drinking.
+    </p>
+    <div class="actions">
+      <a class="button" href="/product-category/single-origin/">Shop Single Origin</a>
+      <a class="button ghost" href="/journal/">Read the Journal</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  section {
+    padding-inline: 24px;
+  }
+  h2 {
+    font-size: clamp(28px, 3.6vw, 38px);
+    line-height: 1.2;
+    margin-bottom: 22px;
+  }
+  p {
+    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.234), 17px);
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+  .eyebrow {
+    color: var(--color-matcha);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+
+  .hero {
+    max-width: 748px;
+    margin: 0 auto;
+    padding-block: clamp(80px, 10vw, 140px) clamp(56px, 7vw, 88px);
+    text-align: center;
+  }
+  .hero .eyebrow {
+    margin-bottom: 22px;
+  }
+  .hero h2 {
+    font-size: clamp(38px, 5.5vw, 62px);
+    line-height: 1.15;
+    margin-bottom: 28px;
+  }
+  .lead {
+    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.391), 19px);
+    line-height: 1.75;
+    margin: 0;
+  }
+  .wide {
+    width: 100%;
+  }
+
+  /* Two columns, text 55% and image 45%, as on WordPress. */
+  .row {
+    display: grid;
+    grid-template-columns: 55fr 45fr;
+    align-items: center;
+    gap: 64px;
+    max-width: 1168px;
+    margin: 0 auto;
+    padding-block: clamp(40px, 5vw, 64px);
+  }
+  .row.first {
+    padding-top: clamp(64px, 8vw, 112px);
+  }
+  .row.reverse {
+    grid-template-columns: 45fr 55fr;
+  }
+  .row :global(img) {
+    width: 100%;
+  }
+
+  .block {
+    max-width: 1168px;
+    margin: 0 auto;
+    padding-block: clamp(40px, 5vw, 64px);
+  }
+  .block.last {
+    padding-block: clamp(48px, 6vw, 80px) clamp(72px, 9vw, 120px);
+  }
+  .gardens-intro {
+    margin-bottom: 44px;
+  }
+  .gardens {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+  .gardens h3 {
+    margin: 0 0 12px;
+  }
+  .gardens p {
+    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.156), 16px);
+    margin: 0;
+  }
+  .more {
+    margin-top: 44px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .more a {
+    color: var(--color-stone-strong);
+  }
+  hr {
+    height: 1px;
+    border: 0;
+    background: var(--color-stone);
+    margin: clamp(48px, 6vw, 72px) 0;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 48px;
+  }
+  .actions .button {
+    padding: 17px 38px;
+  }
+
+  @media (max-width: 781.98px) {
+    .row,
+    .row.reverse,
+    .gardens {
+      grid-template-columns: 1fr;
+    }
+    .row {
+      gap: 40px;
+    }
+    /* Text first on phones, as WordPress stacks the columns. */
+    .row.reverse :global(img) {
+      order: 1;
+    }
+  }
+</style>

@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<!-- Text and sizes copied from the WordPress Contact page. -->
+<BaseLayout title="Contact">
+  <h1 class="container page-title">Contact</h1>
+
+  <section class="contact">
+    <h2>Get in touch</h2>
+    <p class="intro">
+      Questions about a harvest, an order, or which garden to start with — we read everything and reply within two
+      working days.
+    </p>
+
+    <div class="columns">
+      <!-- shortcut: demo form that sends nothing (handled in BaseLayout); phase 4 connects it. -->
+      <form data-demo>
+        <label class="visually-hidden" for="contact-name">Name</label>
+        <input class="field" id="contact-name" name="name" type="text" placeholder="Name" required />
+        <label class="visually-hidden" for="contact-email">Email address</label>
+        <input class="field" id="contact-email" name="email" type="email" placeholder="Email address" required />
+        <label class="visually-hidden" for="contact-message">Message</label>
+        <textarea class="field" id="contact-message" name="message" rows="5" placeholder="How can we help?" required></textarea>
+        <button class="button" type="submit">Send message</button>
+        <p class="note" role="status" hidden>Thank you — this is a demo form and does not send your message.</p>
+      </form>
+
+      <div class="details">
+        <h3 class="eyebrow">Studio</h3>
+        <p>54 Wythe Avenue, Studio 3<br />Brooklyn, NY 11249</p>
+        <h3 class="eyebrow">Hours</h3>
+        <p>Monday to Friday<br />9am – 5pm ET</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact {
+    max-width: 1168px;
+    margin: 0 auto;
+    padding: clamp(72px, 9vw, 120px) 24px;
+  }
+  h2 {
+    font-size: clamp(36px, 5vw, 54px);
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+  .intro {
+    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.313), 18px);
+    line-height: 1.7;
+    margin-bottom: 56px;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: 58fr 42fr;
+    gap: 72px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  textarea {
+    resize: vertical;
+  }
+  form .button {
+    margin-top: 8px;
+    padding: 17px 38px;
+  }
+  .note {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-matcha);
+  }
+
+  .eyebrow {
+    margin: 0 0 14px;
+    color: var(--color-matcha);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+  .details p {
+    font-size: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.156), 16px);
+    line-height: 1.8;
+    margin-bottom: 36px;
+  }
+
+  @media (max-width: 781.98px) {
+    .columns {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+  }
+</style>

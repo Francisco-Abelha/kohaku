@@ -1,0 +1,55 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatDate } from '../lib/format';
+
+// Journal posts live at the root (/why-origin-matters/), as on WordPress.
+// Fixed pages like /about/ always win over this dynamic route, so they never clash.
+export async function getStaticPaths() {
+  const posts = await getCollection('journal');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+interface Props {
+  post: CollectionEntry<'journal'>;
+}
+
+const { post } = Astro.props;
+// render() turns the Markdown body into a component we can place in the page.
+const { Content } = await render(post);
+---
+
+<BaseLayout title={post.data.title}>
+  <article class="container-narrow post">
+    <header>
+      <h1>{post.data.title}</h1>
+      <p class="excerpt">{post.data.excerpt}</p>
+      <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .post {
+    padding: 60px 0 100px;
+  }
+  h1 {
+    font-size: 30px;
+    margin-bottom: 15px;
+  }
+  .excerpt {
+    margin-bottom: 15px;
+  }
+  time {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .prose {
+    margin-top: 50px;
+  }
+</style>

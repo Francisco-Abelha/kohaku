@@ -1,0 +1,28 @@
+{
+  "name": "Bamboo Chasen Whisk",
+  "category": "equipment",
+  "summary": "Traditional 80-prong bamboo whisk for ceremonial matcha preparation. Hand-carved from a single piece of bamboo.",
+  "description": "The traditional tool for preparing matcha, this 80-prong bamboo whisk is hand-carved from a single piece of bamboo. The fine tines are designed to aerate the tea and create a smooth, even foam when whisked in a bowl.\n\nAn 80-prong chasen offers a practical balance between speed and control, making it suitable for both ceremonial-grade and everyday matcha. Rinse in warm water before use to soften the tines, and allow it to dry thoroughly after each preparation.\n\nA simple, essential utensil that brings proper texture and consistency to the bowl.",
+  "tabs": [
+    {
+      "title": "Care",
+      "body": "**Never use soap, and never leave it standing in water.**\n\nRinse in warm water immediately after use, working the prongs gently apart with your fingers to release trapped powder. Matcha left to dry between the tines is what eventually splits them.\n\nStand it on a whisk holder to dry in open air — the holder keeps the prongs in shape and lets water run out rather than pool at the base. A chasen kept this way lasts months of daily use; one left wet in a drawer grows mould and splits within weeks.\n\nProngs will break eventually. That is normal, not a defect: a chasen is a consumable, and eighty to a hundred bowls is a fair life."
+    }
+  ],
+  "variants": [
+    {
+      "label": "Standard",
+      "priceCents": 3200
+    }
+  ],
+  "images": [
+    {
+      "src": "../../assets/products/matcha-whisk.jpg",
+      "alt": "matcha whisk"
+    },
+    {
+      "src": "../../assets/products/matcha-whisk-closeup-scaled.jpg",
+      "alt": "matcha whisk in use"
+    }
+  ]
+}

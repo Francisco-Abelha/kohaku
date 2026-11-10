@@ -1,0 +1,31 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+// Markdown pages in src/pages/ that name this layout pass their frontmatter here.
+interface Props {
+  frontmatter: { title: string };
+}
+
+const { title } = Astro.props.frontmatter;
+---
+
+<BaseLayout title={title}>
+  <div class="container-narrow text-page">
+    <h1 class="page-title">{title}</h1>
+    <div class="prose">
+      <slot />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .text-page {
+    padding-bottom: 100px;
+  }
+  .prose {
+    margin-top: 40px;
+  }
+  .prose :global(h2:first-child) {
+    margin-top: 0;
+  }
+</style>
