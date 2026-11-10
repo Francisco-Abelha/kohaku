@@ -1,0 +1,86 @@
+/* Brand tokens, copied from the WordPress theme (Blocksy palette and Additional CSS). */
+:root {
+  --color-ink: #1a1a1a;
+  --color-matcha: #4a5d3a;
+  --color-stone: #8b8478;
+  --color-paper: #f8f6f1;
+  --color-white: #ffffff;
+
+  --font-body: var(--font-inter);
+  --font-display: var(--font-cormorant);
+
+  --container: min(88vw, 1290px);
+  --container-narrow: min(88vw, 750px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 0.5em;
+}
+h1 { font-size: 56px; }
+h2 { font-size: 40px; }
+h3 { font-size: 28px; }
+h4 { font-size: 25px; font-weight: 700; line-height: 1.5; }
+
+p {
+  margin: 0 0 1.5em;
+}
+
+a {
+  color: inherit;
+}
+a:hover {
+  color: var(--color-matcha);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.container {
+  width: var(--container);
+  margin-inline: auto;
+}
+.container-narrow {
+  width: var(--container-narrow);
+  margin-inline: auto;
+}
+
+.button {
+  display: inline-block;
+  background: var(--color-matcha);
+  color: var(--color-paper);
+  border: 0;
+  border-radius: 0;
+  padding: 15px 32px;
+  font: 500 13px/1.7 var(--font-body);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button:hover {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}

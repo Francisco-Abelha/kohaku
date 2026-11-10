@@ -34,6 +34,8 @@ It is a portfolio project. The goal is a faster site that I understand completel
 3. **Cart and checkout**: client-side cart island, then Stripe Checkout (test mode) and the webhook.
 4. **Launch**: newsletter and contact forms, SEO metadata, redirects from old WordPress URLs, Lighthouse comparison, then move the domain to Vercel.
 
+Order change (2026-11-10): the phase 2 content import runs right after the phase 1 layout, so pages are built against real content. The rebuild is a faithful copy of the WordPress design, with the same URLs.
+
 Each phase is its own branch and pull request into `main`. Don't commit directly to `main`.
 
 ## Content model (draft, refine with me)
