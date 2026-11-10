@@ -3,6 +3,8 @@ import { defineConfig, fontProviders } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
+  // WordPress URLs end in a slash (/about/), and we keep them identical.
+  trailingSlash: 'always',
   // Downloaded at build time and served from our own domain, so visitors never request Google's servers.
   fonts: [
     {

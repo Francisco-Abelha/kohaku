@@ -5,12 +5,21 @@
   --color-stone: #8b8478;
   --color-paper: #f8f6f1;
   --color-white: #ffffff;
+  --color-sand: #edeae2;
+  --color-night: #192a3d;
 
   --font-body: var(--font-inter);
   --font-display: var(--font-cormorant);
 
-  --container: min(88vw, 1290px);
-  --container-narrow: min(88vw, 750px);
+  --container: min(90vw, 1290px);
+  --container-narrow: min(90vw, 750px);
+}
+
+@media (max-width: 689.98px) {
+  :root {
+    --container: 88vw;
+    --container-narrow: 88vw;
+  }
 }
 
 *,
@@ -21,6 +30,10 @@
 
 body {
   margin: 0;
+  /* Keeps the footer at the bottom on short pages. */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-body);
@@ -40,6 +53,10 @@ h1 { font-size: 56px; }
 h2 { font-size: 40px; }
 h3 { font-size: 28px; }
 h4 { font-size: 25px; font-weight: 700; line-height: 1.5; }
+
+main {
+  flex: 1;
+}
 
 p {
   margin: 0 0 1.5em;

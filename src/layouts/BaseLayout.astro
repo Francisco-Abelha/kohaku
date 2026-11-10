@@ -1,0 +1,62 @@
+---
+import { Font } from 'astro:assets';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+}
+
+const { title } = Astro.props;
+// Same title format as WordPress.
+const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matcha';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <Font cssVariable="--font-inter" preload />
+    <Font cssVariable="--font-cormorant" preload />
+    <title>{fullTitle}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <p class="notice">Concept store · no real orders are taken</p>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .notice {
+    margin: 0;
+    padding: 8px 16px;
+    background: var(--color-sand);
+    color: var(--color-ink);
+    font-size: 12px;
+    line-height: 1.5;
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 16px;
+    top: -100px;
+    padding: 8px 16px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    z-index: 200;
+  }
+  .skip-link:focus {
+    top: 8px;
+  }
+</style>

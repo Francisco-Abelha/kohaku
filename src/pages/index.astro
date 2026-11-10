@@ -1,27 +1,20 @@
 ---
-import { Font } from 'astro:assets';
-import '../styles/global.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<Font cssVariable="--font-inter" preload />
-		<Font cssVariable="--font-cormorant" preload />
-		<title>Kohaku</title>
-	</head>
-	<body>
-		<!-- Temporary type sample for step 1. The real home page replaces it in step 3. -->
-		<main class="container">
-			<h1>Matcha, considered.</h1>
-			<h2>Four gardens, kept apart.</h2>
-			<h3>Where to start</h3>
-			<p>Single-origin matcha from four gardens in Japan, each kept separate so you can taste where it was grown.</p>
-			<a class="button" href="#">Shop matcha</a>
-		</main>
-	</body>
-</html>
+<BaseLayout>
+  <!-- Temporary type sample for steps 1–2. The real home page replaces it in step 3. -->
+  <div class="container sample">
+    <h1>Matcha, considered.</h1>
+    <h2>Four gardens, kept apart.</h2>
+    <h3>Where to start</h3>
+    <p>Single-origin matcha from four gardens in Japan, each kept separate so you can taste where it was grown.</p>
+    <a class="button" href="/shop/">Shop matcha</a>
+  </div>
+</BaseLayout>
+
+<style>
+  .sample {
+    padding: 50px 0;
+  }
+</style>
