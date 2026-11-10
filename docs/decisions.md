@@ -48,6 +48,13 @@
 **Alternative:** build every phase 1 page with two sample products and import afterwards.
 **Why:** building against the real content lets us compare each page with the live site as we go.
 
+## Motion with native CSS and small scripts, no animation library
+
+**Chose:** CSS transitions and keyframes for load-in motion, CSS scroll-driven animations (`animation-timeline`) for scroll effects, and small scripts only where behaviour depends on scroll direction. Everything is disabled under `prefers-reduced-motion`.
+**Alternatives:** GSAP with ScrollTrigger, Lenis for smooth scrolling, Framer Motion.
+**Why:** the effects so far don't need a timeline library, and zero added JavaScript keeps the Lighthouse comparison strong. Browsers without scroll-driven animations (Firefox, for now) simply show the final state. GSAP stays the next step for pinned sections or long choreographed sequences.
+**Gotcha:** Astro's CSS minifier folds `animation-timeline` into the `animation` shorthand, which Chrome rejects. Scroll-driven animations must use the `animation-*` longhands.
+
 ## Product tabs as plain text with **bold**
 
 **Chose:** the extra product tabs (Tasting Notes, How to Prepare, Care) are stored in each product's JSON as text: paragraphs separated by blank lines, with `**bold**` as the only formatting. `src/lib/text.ts` escapes the text and turns it into HTML.

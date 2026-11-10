@@ -6,9 +6,11 @@ import '../styles/global.css';
 
 interface Props {
   title?: string;
+  /** Home page: the header starts hidden and the notice floats over the full-screen hero. */
+  autoHideHeader?: boolean;
 }
 
-const { title } = Astro.props;
+const { title, autoHideHeader = false } = Astro.props;
 // Same title format as WordPress.
 const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matcha';
 ---
@@ -26,8 +28,8 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <p class="notice">Concept store · no real orders are taken</p>
-    <Header />
+    <p class:list={['notice', { overlay: autoHideHeader }]}>Concept store · no real orders are taken</p>
+    <Header autoHide={autoHideHeader} />
     <main id="main">
       <slot />
     </main>
@@ -55,6 +57,14 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
     line-height: 1.5;
     letter-spacing: 0.05em;
     text-align: center;
+  }
+  /* Floats over the top of the full-screen hero instead of pushing it down. */
+  .notice.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
   }
 
   .skip-link {
