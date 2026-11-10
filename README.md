@@ -7,7 +7,7 @@ A storefront for Kohaku, a single-origin matcha brand I designed, rebuilt from W
 **Live site:** https://shopkohaku.com
 **Original WordPress version:** _[link to an archived copy or screenshots]_
 
-![Kohaku home page](docs/screenshots/home.png)
+![Kohaku home page](docs/screenshots/home-after.jpg)
 
 ---
 
