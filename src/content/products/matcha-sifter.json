@@ -1,0 +1,26 @@
+{
+  "name": "Matcha Sifter",
+  "category": "equipment",
+  "summary": "Fine mesh sifter for breaking up clumps before whisking. The difference between a smooth and a lumpy bowl.",
+  "description": "A fine mesh sifter used to break up clumps before whisking. Because matcha is naturally prone to compacting, sifting helps create a smoother mixture and more even foam.\n\nPlace the desired amount of tea into the sifter and press it through with the bamboo scoop or a small spoon before adding water. This small step noticeably improves texture and consistency.\n\nSimple but worthwhile, especially for those preparing matcha regularly.",
+  "variants": [
+    {
+      "label": "Standard",
+      "priceCents": 1800
+    }
+  ],
+  "images": [
+    {
+      "src": "../../assets/products/tea-strainer-scaled.jpg",
+      "alt": "matcha sifter"
+    },
+    {
+      "src": "../../assets/products/tea-straner-secondary-scaled.jpg",
+      "alt": "matcha being prepared"
+    },
+    {
+      "src": "../../assets/products/matcha-powder-background-scaled.jpg",
+      "alt": "matcha powder background"
+    }
+  ]
+}

@@ -97,7 +97,11 @@ Environment variables (see `.env.example`):
 
 ```bash
 python3 scripts/export_wordpress.py --site https://shopkohaku.com --out src/content
+python3 scripts/export_wordpress.py --skip-fetch    # convert again from raw/, no requests
+python3 -m unittest discover -s scripts             # tests for the conversions
 ```
+
+It only sends GET requests to public endpoints, and it is safe to re-run. Step 1 saves the API responses unchanged in `raw/` (gitignored). Step 2 converts them and downloads the images into `src/assets/`, listing each one's source in [`docs/image-sources.md`](docs/image-sources.md).
 
 Old WordPress URLs redirect to their new paths, so existing links keep working. The redirects are listed in `vercel.json`.
 

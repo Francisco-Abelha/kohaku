@@ -13,6 +13,9 @@ yarn-error.log*
 pnpm-debug.log*
 
 
+# raw WordPress API responses, saved by scripts/export_wordpress.py
+raw/
+
 # environment variables
 .env
 .env.production

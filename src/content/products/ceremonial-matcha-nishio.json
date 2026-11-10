@@ -1,0 +1,42 @@
+{
+  "name": "Ceremonial Matcha — Nishio",
+  "category": "single-origin",
+  "origin": {
+    "region": "Nishio",
+    "prefecture": "Aichi"
+  },
+  "summary": "Bright, refreshing, slightly sweeter than Uji.",
+  "description": "Produced in Nishio, one of Japan’s most respected matcha-growing regions, this ceremonial-grade tea is made from carefully shade-grown leaves harvested in spring. The plants are covered for several weeks before picking, a traditional method that deepens chlorophyll content and encourages the development of amino acids responsible for matcha’s sweetness and umami.\n\nAfter steaming and drying, the leaves are refined into tencha and stone-milled into a fine, vibrant powder. The resulting bowl is bright and refreshing, with a clean vegetal character and a sweetness that feels slightly more pronounced than matcha from Uji. The finish is light and lively, with gentle umami and very little astringency.\n\nWell suited to usucha, where its freshness and sweetness are most expressive, though it can also be prepared as a softer, approachable koicha.",
+  "variants": [
+    {
+      "label": "30 g",
+      "grams": 30,
+      "priceCents": 3600
+    },
+    {
+      "label": "50 g",
+      "grams": 50,
+      "priceCents": 4800
+    },
+    {
+      "label": "100 g",
+      "grams": 100,
+      "priceCents": 8200
+    }
+  ],
+  "images": [
+    {
+      "src": "../../assets/products/nishio-mockup.jpg",
+      "alt": "Kohaku Ceremonial Matcha — Nishio single-origin packaging"
+    },
+    {
+      "src": "../../assets/products/matcha-powder-background-scaled.jpg",
+      "alt": "matcha powder background"
+    },
+    {
+      "src": "../../assets/products/matcha-powder-scoop-scaled.jpg",
+      "alt": "matcha powder in a bamboo scoop"
+    }
+  ],
+  "featured": true
+}

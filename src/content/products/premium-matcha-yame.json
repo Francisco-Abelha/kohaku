@@ -1,0 +1,42 @@
+{
+  "name": "Premium Matcha — Yame",
+  "category": "single-origin",
+  "origin": {
+    "region": "Yame",
+    "prefecture": "Fukuoka"
+  },
+  "summary": "Bold, deeply mineral, less sweet. For matcha drinkers who like depth.",
+  "description": "Grown in Yame, this premium single-origin matcha offers a deeper, more robust profile than lighter ceremonial teas. Yame is known for producing shaded green teas with substantial body and a distinct mineral character, qualities that are fully expressed here.\n\nThe leaves are shade-grown before harvest, then steamed, dried, and stone-milled using traditional granite mills. This slow process preserves the tea’s aromatic complexity and yields a smooth, fine powder that whisks easily.\n\nIn the bowl, the flavor is bold and concentrated, with pronounced umami, a deeply mineral backbone, and less overt sweetness. The finish is lingering and savory, appealing to experienced matcha drinkers who prefer structure and depth over softness.\n\nExcellent as usucha and especially compelling as koicha, where its density and layered character become more pronounced.",
+  "variants": [
+    {
+      "label": "30 g",
+      "grams": 30,
+      "priceCents": 3600
+    },
+    {
+      "label": "50 g",
+      "grams": 50,
+      "priceCents": 4500
+    },
+    {
+      "label": "100 g",
+      "grams": 100,
+      "priceCents": 8200
+    }
+  ],
+  "images": [
+    {
+      "src": "../../assets/products/yame-mockup.jpg",
+      "alt": "Kohaku Premium Matcha — Yame single-origin packaging"
+    },
+    {
+      "src": "../../assets/products/matcha-powder-scoop-scaled.jpg",
+      "alt": "matcha powder in a bamboo scoop"
+    },
+    {
+      "src": "../../assets/products/matcha-powder-background-scaled.jpg",
+      "alt": "matcha powder background"
+    }
+  ],
+  "featured": true
+}

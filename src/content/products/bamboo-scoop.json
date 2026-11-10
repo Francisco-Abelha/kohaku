@@ -1,0 +1,26 @@
+{
+  "name": "Bamboo Scoop",
+  "category": "equipment",
+  "summary": "The traditional measuring scoop. One full scoop is roughly 1 gram — the right dose for a single bowl of usucha.",
+  "description": "The chashaku is the traditional bamboo scoop used to measure matcha. Hand-shaped from a slender piece of bamboo, it offers a simple and precise way to portion tea.\n\nOne full scoop measures approximately 1 gram of matcha. Two scoops is a standard starting point for a bowl of usucha, with additional scoops used for stronger preparations.\n\nLightweight and understated, it remains one of the most practical tools in traditional matcha preparation.",
+  "variants": [
+    {
+      "label": "Standard",
+      "priceCents": 1400
+    }
+  ],
+  "images": [
+    {
+      "src": "../../assets/products/matcha-powder-scoop-scaled.jpg",
+      "alt": "matcha powder in a bamboo scoop"
+    },
+    {
+      "src": "../../assets/products/bamboo-scoop-matcha-composition-secondary-scaled.jpg",
+      "alt": "matcha prep setup"
+    },
+    {
+      "src": "../../assets/products/bamboo-scoop-matcha-composition-scaled.jpg",
+      "alt": "matcha prep setup"
+    }
+  ]
+}
