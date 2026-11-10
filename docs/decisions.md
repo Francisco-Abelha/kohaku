@@ -48,6 +48,18 @@
 **Alternative:** build every phase 1 page with two sample products and import afterwards.
 **Why:** building against the real content lets us compare each page with the live site as we go.
 
+## Product tabs as plain text with **bold**
+
+**Chose:** the extra product tabs (Tasting Notes, How to Prepare, Care) are stored in each product's JSON as text: paragraphs separated by blank lines, with `**bold**` as the only formatting. `src/lib/text.ts` escapes the text and turns it into HTML.
+**Alternatives:** store the WordPress HTML and insert it as-is; switch products to Markdown files; add a Markdown library.
+**Why:** that's all the formatting the tabs use. Escaping first means content can never inject HTML, and it needs no dependency. If the tabs ever need lists or links, switching to Markdown files is the next step.
+
+## No reviews tab
+
+**Chose:** drop the WooCommerce "Reviews (0)" tab.
+**Alternative:** rebuild reviews with a form and storage.
+**Why:** there are no reviews, the WordPress form posts to WordPress's comment system, and a concept store has no one to review it.
+
 ## Netlify for hosting
 
 **Chose:** Netlify, which builds the site from GitHub and gives each pull request a deploy preview.

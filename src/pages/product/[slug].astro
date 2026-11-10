@@ -1,0 +1,336 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import ProductGallery from '../../components/ProductGallery.astro';
+import { categoryNames } from '../../data/categories';
+import { formatPrice, priceRange } from '../../lib/format';
+import { paragraphsToHtml } from '../../lib/text';
+
+// One page per product file: /product/ceremonial-matcha-uji/ and so on.
+export async function getStaticPaths() {
+  const products = await getCollection('products');
+  return products.map((product) => ({ params: { slug: product.id }, props: { product, products } }));
+}
+
+interface Props {
+  product: CollectionEntry<'products'>;
+  products: CollectionEntry<'products'>[];
+}
+
+const { product, products } = Astro.props;
+const { name, category, variants, origin, grade, summary, description, tabs, images } = product.data;
+const categoryHref = `/product-category/${category}/`;
+
+// WooCommerce's "Additional information" tab: only for products with these details.
+const details = [
+  ...(variants.some((v) => v.grams) ? [{ label: 'Size', value: variants.map((v) => v.label).join(', ') }] : []),
+  ...(origin ? [{ label: 'Origin', value: origin.region }] : []),
+  ...(grade ? [{ label: 'Grade', value: grade }] : []),
+];
+
+const panels = [
+  { id: 'description', title: 'Description', html: paragraphsToHtml(description) },
+  ...tabs.map((tab, i) => ({ id: `tab-${i}`, title: tab.title, html: paragraphsToHtml(tab.body) })),
+];
+
+const related = products
+  .filter((p) => p.data.category === category && p.id !== product.id)
+  .sort((a, b) => a.data.name.localeCompare(b.data.name))
+  .slice(0, 4);
+---
+
+<BaseLayout title={name}>
+  <div class="container product">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><a href={categoryHref}>{categoryNames[category]}</a></li>
+        <li aria-current="page">{name}</li>
+      </ol>
+    </nav>
+
+    <div class="top">
+      <ProductGallery images={images} />
+
+      <div class="summary">
+        <h1>{name}</h1>
+        <!-- The script below swaps the range for the chosen size's price. -->
+        <p class="price" aria-live="polite">{priceRange(variants)}</p>
+        <div class="short" set:html={paragraphsToHtml(summary)} />
+
+        {variants.length > 1 && (
+          <fieldset class="sizes">
+            <legend>Size</legend>
+            <div class="options">
+              {variants.map((variant, i) => (
+                <label>
+                  <input type="radio" name="size" value={variant.label} data-price={formatPrice(variant.priceCents)} checked={i === 0} />
+                  <span>{variant.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
+        <p class="meta">
+          <span>Category:</span> <a href={categoryHref}>{categoryNames[category]}</a>
+        </p>
+      </div>
+    </div>
+
+    <section class="tabs-section" aria-label="Product information">
+      <!-- Hidden until the script runs; without JavaScript every panel is shown in turn. -->
+      <div class="tablist" role="tablist" hidden>
+        {[...panels, ...(details.length ? [{ id: 'details', title: 'Additional information' }] : [])].map((panel, i) => (
+          <button type="button" role="tab" id={`tab-button-${panel.id}`} aria-controls={`panel-${panel.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+            {panel.title}
+          </button>
+        ))}
+      </div>
+      {panels.map((panel) => (
+        <div class="panel" id={`panel-${panel.id}`} role="tabpanel" aria-labelledby={`tab-button-${panel.id}`}>
+          <h2 class="visually-hidden">{panel.title}</h2>
+          <div set:html={panel.html} />
+        </div>
+      ))}
+      {details.length > 0 && (
+        <div class="panel" id="panel-details" role="tabpanel" aria-labelledby="tab-button-details">
+          <h2 class="visually-hidden">Additional information</h2>
+          <table>
+            {details.map((row) => (
+              <tr><th scope="row">{row.label}</th><td>{row.value}</td></tr>
+            ))}
+          </table>
+        </div>
+      )}
+    </section>
+
+    {related.length > 0 && (
+      <section class="related">
+        <h2>Related products</h2>
+        <ul class="product-grid">
+          {related.map((p) => <li><ProductCard product={p} /></li>)}
+        </ul>
+      </section>
+    )}
+  </div>
+</BaseLayout>
+
+<script>
+  // Size buttons: show the chosen size's price.
+  const price = document.querySelector<HTMLElement>('.summary .price')!;
+  const sizes = document.querySelectorAll<HTMLInputElement>('.sizes input');
+  const showPrice = () => {
+    const checked = [...sizes].find((input) => input.checked);
+    if (checked) price.textContent = checked.dataset.price!;
+  };
+  sizes.forEach((input) => input.addEventListener('change', showPrice));
+  showPrice();
+
+  // Tabs, following the WAI-ARIA tabs pattern: click or arrow keys to switch.
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+  const select = (tab: HTMLButtonElement) => {
+    for (const t of tabs) {
+      const selected = t === tab;
+      t.setAttribute('aria-selected', String(selected));
+      t.tabIndex = selected ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')!)!.hidden = !selected;
+    }
+  };
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', (event) => {
+      const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+      if (!step) return;
+      const next = tabs[(i + step + tabs.length) % tabs.length];
+      select(next);
+      next.focus();
+    });
+  });
+  document.querySelector<HTMLElement>('[role="tablist"]')!.hidden = false;
+  select(tabs[0]);
+</script>
+
+<style>
+  .product {
+    padding: 60px 0 100px;
+  }
+
+  .breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 0;
+    list-style: none;
+    margin: 0 0 40px;
+    padding: 0;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  .breadcrumbs li + li::before {
+    content: '›';
+    margin: 0 12px;
+  }
+  .breadcrumbs a {
+    color: var(--color-stone-strong);
+    text-decoration: none;
+  }
+  .breadcrumbs a:hover {
+    color: var(--color-matcha);
+  }
+
+  .top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  h1 {
+    font-size: 44px;
+    line-height: 1.3;
+    margin: 0 0 10px;
+  }
+  .price {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 35px;
+  }
+  .short :global(p) {
+    font-size: 17px;
+    margin: 0;
+  }
+  .short {
+    padding-bottom: 35px;
+    border-bottom: 1px solid var(--color-stone);
+    margin-bottom: 35px;
+  }
+
+  .sizes {
+    border: 0;
+    border-bottom: 1px solid var(--color-stone);
+    margin: 0 0 35px;
+    padding: 0 0 35px;
+  }
+  .sizes legend {
+    padding: 0;
+    margin-bottom: 12px;
+    color: var(--color-matcha);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  /* The radio buttons stay in the page for keyboards and screen readers; the label is what you see. */
+  .options input {
+    position: absolute;
+    opacity: 0;
+  }
+  .options span {
+    display: inline-block;
+    min-width: 80px;
+    padding: 12px 20px;
+    border: 1px solid var(--color-stone);
+    text-align: center;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .options input:checked + span {
+    background: var(--color-matcha);
+    border-color: var(--color-matcha);
+    color: var(--color-paper);
+  }
+  .options input:focus-visible + span {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
+  .meta {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  .meta span {
+    font-weight: 700;
+  }
+  .meta a {
+    color: var(--color-stone-strong);
+    text-decoration: none;
+  }
+
+  .tabs-section {
+    margin-top: 100px;
+  }
+  .tablist {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    border-bottom: 1px solid var(--color-stone);
+    margin-bottom: 60px;
+  }
+  .tablist[hidden] {
+    display: none;
+  }
+  [role='tab'] {
+    padding: 14px 18px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    background: none;
+    color: var(--color-ink);
+    font: 500 12px/1.5 var(--font-body);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  [role='tab'][aria-selected='true'] {
+    border-bottom-color: var(--color-ink);
+    color: var(--color-matcha);
+  }
+  .panel {
+    max-width: 690px;
+    margin: 0 auto 40px;
+    font-size: 17px;
+    line-height: 1.85;
+  }
+  .panel :global(p) {
+    margin: 0 0 1.2em;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-stone);
+    text-align: left;
+  }
+  th {
+    width: 40%;
+    font-weight: 600;
+  }
+
+  .related {
+    margin-top: 60px;
+  }
+  .related h2 {
+    font-size: 22px;
+    margin-bottom: 30px;
+  }
+
+  @media (max-width: 999.98px) {
+    .top {
+      grid-template-columns: 1fr;
+    }
+    h1 {
+      font-size: 34px;
+    }
+  }
+</style>

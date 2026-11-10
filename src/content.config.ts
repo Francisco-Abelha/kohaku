@@ -10,8 +10,11 @@ const products = defineCollection({
       category: z.enum(['single-origin', 'daily', 'equipment', 'gift-sets']),
       // Optional because equipment has no origin or weight.
       origin: z.object({ region: z.string(), prefecture: z.string() }).optional(),
+      grade: z.string().optional(),
       summary: z.string(),
       description: z.string(),
+      // Extra tabs such as Tasting Notes or Care. Paragraphs separated by blank lines; **bold** allowed.
+      tabs: z.array(z.object({ title: z.string(), body: z.string() })).default([]),
       variants: z
         .array(
           z.object({

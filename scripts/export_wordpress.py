@@ -72,6 +72,10 @@ def fetch(site):
     for post in load_collection('posts'):
         if post['featured_media']:
             fetch_item(f"{api}/wp/v2/media/{post['featured_media']}", RAW / 'media' / f"{post['featured_media']}.json")
+    # The custom tabs (Tasting Notes, How to Prepare, Care) come from the child theme and
+    # are not in the REST API, so we save the public product pages too.
+    for product in load_collection('products'):
+        fetch_item(f"{site}/product/{product['slug']}/", RAW / 'product-pages' / f"{product['slug']}.html")
     # Not converted: kept as the reference for building the About, Contact and policy pages.
     fetch_collection(f'{api}/wp/v2/pages', 'pages')
 
@@ -110,6 +114,18 @@ def markdown(fragment):
     """Convert post HTML to Markdown. The posts only use <h2>, <p> and <strong>."""
     fragment = re.sub(r'</?(?:strong|b)(?:\s[^>]*)?>', '**', fragment)
     return '\n\n'.join(('## ' if tag == 'h2' else '') + text(body) for tag, body in blocks(fragment, 'h2|p')) + '\n'
+
+
+def custom_tabs(page):
+    """Read the child theme's tabs from a product page as [{title, body}], body in **bold** Markdown."""
+    if 'woocommerce-tabs' not in page:
+        raise ValueError('not a product page (maybe a bot check?)')
+    titles = dict(re.findall(r'class="(kohaku_\w+)_tab"[^>]*>\s*<a[^>]*>(.*?)</a>', page, re.S))
+    tabs = []
+    for key, body in re.findall(r'id="tab-(kohaku_\w+)"[^>]*>(.*?)</div>', page, re.S):
+        body = re.sub(r'<h2\b[^>]*>.*?</h2>', '', body, count=1, flags=re.S)  # repeats the tab title
+        tabs.append({'title': text(titles[key]), 'body': markdown(body).strip()})
+    return tabs
 
 
 def parse_grams(size):
@@ -182,7 +198,7 @@ class Images:
         )
 
 
-def convert_product(product, variations, images):
+def convert_product(product, variations, page, images):
     slug = product['slug']
     categories = [c['slug'] for c in product['categories']]
     if len(categories) != 1:
@@ -193,8 +209,13 @@ def convert_product(product, variations, images):
     if 'Origin' in attributes:
         region = attributes['Origin'][0]
         result['origin'] = {'region': region, 'prefecture': PREFECTURES[region]}
+    if 'Grade' in attributes:
+        result['grade'] = attributes['Grade'][0]
     result['summary'] = paragraphs(product['short_description'])
     result['description'] = paragraphs(product['description'])
+    tabs = custom_tabs(page)
+    if tabs:
+        result['tabs'] = tabs
     result['variants'] = variants(product, variations)
     result['images'] = []
     for image in product['images']:
@@ -229,7 +250,8 @@ def convert(site, out):
     products = load_collection('products')
     (out / 'products').mkdir(parents=True, exist_ok=True)
     for product in products:
-        data = convert_product(product, variations, images)
+        page = (RAW / 'product-pages' / f"{product['slug']}.html").read_text(encoding='utf-8')
+        data = convert_product(product, variations, page, images)
         path = out / 'products' / f"{product['slug']}.json"
         path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
 

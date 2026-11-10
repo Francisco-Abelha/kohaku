@@ -1,0 +1,88 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  images: CollectionEntry<'products'>['data']['images'];
+}
+
+const { images } = Astro.props;
+---
+
+<div class="gallery">
+  <div class="main">
+    {images.map((image, i) => (
+      <Image
+        src={image.src}
+        alt={image.alt}
+        widths={[640, 1280]}
+        sizes="(max-width: 999px) 88vw, 625px"
+        loading={i === 0 ? 'eager' : 'lazy'}
+        hidden={i > 0}
+        data-index={i}
+      />
+    ))}
+  </div>
+
+  {/* Thumbnails stay hidden until the script runs: without JavaScript only the first photo shows. */}
+  {images.length > 1 && (
+    <div class="thumbs" hidden>
+      {images.map((image, i) => (
+        <button type="button" data-index={i} aria-label={`Show image ${i + 1} of ${images.length}`} aria-pressed={i === 0 ? 'true' : 'false'}>
+          <Image src={image.src} alt="" widths={[240]} sizes="113px" />
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
+<script>
+  const gallery = document.querySelector<HTMLElement>('.gallery');
+  const thumbs = gallery?.querySelector<HTMLElement>('.thumbs');
+  if (gallery && thumbs) {
+    thumbs.hidden = false;
+    thumbs.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('button');
+      if (!button) return;
+      for (const img of gallery.querySelectorAll<HTMLImageElement>('.main img')) {
+        img.hidden = img.dataset.index !== button.dataset.index;
+      }
+      for (const b of thumbs.querySelectorAll('button')) {
+        b.setAttribute('aria-pressed', String(b === button));
+      }
+    });
+  }
+</script>
+
+<style>
+  .main :global(img) {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+  .main :global(img[hidden]),
+  .thumbs[hidden] {
+    display: none;
+  }
+  .thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+  }
+  .thumbs button {
+    width: 113px;
+    padding: 0;
+    border: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+  }
+  .thumbs button[aria-pressed='true'] {
+    border-color: var(--color-stone);
+  }
+  .thumbs :global(img) {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+</style>

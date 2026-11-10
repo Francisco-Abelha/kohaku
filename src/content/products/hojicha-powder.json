@@ -1,8 +1,19 @@
 {
   "name": "Hojicha Powder",
   "category": "daily",
+  "grade": "Culinary",
   "summary": "Roasted green tea powder. Toasty, nutty, low caffeine. A warm winter alternative.",
   "description": "Made from roasted Japanese green tea leaves, hojicha powder offers a distinctly warm and comforting alternative to matcha. The roasting process transforms the tea’s natural grassy notes into aromas of toasted grain, nuts, and light caramel while reducing its caffeine content.\n\nGround into a fine powder, it can be whisked with hot water, blended into milk, or used in baking. The flavor is mellow and rounded, with a gentle sweetness and a deeply toasty finish.\n\nParticularly well suited to cooler months, hojicha makes an excellent latte and pairs naturally with chocolate, vanilla, and baked goods. It is also a good option for those seeking a tea with less caffeine than matcha.\n\nQuiet and understated, with a soft roasted character that is easy to enjoy at any time of day.",
+  "tabs": [
+    {
+      "title": "Tasting Notes",
+      "body": "Roasted and low in caffeine, with almost none of the vegetal character of matcha. Toasted grain, a little caramel, a faint woodsmoke at the edges. Warm rather than bright.\n\nBecause the leaf is roasted rather than shaded, it is naturally gentle — most people find it the one they can drink in the evening."
+    },
+    {
+      "title": "How to Prepare",
+      "body": "**2g hojicha · 90ml water · 90°C**\n\nUnlike matcha, hojicha wants genuinely hot water. The roasting has already driven off the delicate compounds that heat would otherwise damage, so there is nothing left to scald.\n\nSift, add water, whisk for ten to fifteen seconds. It froths less than matcha and is not supposed to.\n\nExcellent with milk, and the powder holds its flavour in baking where matcha usually turns dull and brown."
+    }
+  ],
   "variants": [
     {
       "label": "50 g",

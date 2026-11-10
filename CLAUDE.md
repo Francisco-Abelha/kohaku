@@ -67,7 +67,7 @@ Products, one JSON file each in `src/content/products/`:
 
 ## Migration script rules
 
-- Only read from the live WordPress site, using GET requests to the public REST API. Never write to it, log into it or change it.
+- Only read from the live WordPress site, using GET requests to the public REST API and public product pages (for the custom tabs the API doesn't include). Never write to it, log into it or change it.
 - Step 1 saves the raw API responses unchanged in `raw/` (gitignored). Step 2 converts them into the content model above.
 - Download images separately into `src/assets/`, and keep a list of where each image came from so I can check credits and licences.
 - The Matcha Starter Kit is a WooCommerce grouped product with no price of its own. Export it as one variant at `9200` cents.
