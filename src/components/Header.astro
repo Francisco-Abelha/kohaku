@@ -11,9 +11,12 @@ const links = [
 const current = (href: string) => (Astro.url.pathname === href ? 'page' : undefined);
 // Like WordPress, "Shop" stays highlighted on category and product pages.
 const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
+// Home: the bar floats over the full-screen hero and starts hidden. Other pages: it starts
+// visible, in the page's flow under the notice.
+const isHome = Astro.url.pathname === '/';
 ---
 
-<header class="site-header">
+<header class="site-header" data-home={isHome || undefined} data-visible={!isHome || undefined}>
   <div class="container bar">
     <a class="wordmark" href="/">Kohaku</a>
 
@@ -59,21 +62,21 @@ const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
     if (e.key === 'Escape' && nav.hasAttribute('data-open')) setOpen(false);
   });
 
-  // Auto-hiding header, on every page: hidden on load, revealed by scrolling down,
-  // hidden again by scrolling up (and at the very top).
+  // Auto-hiding header, the usual way: it gets out of the way while you read (scrolling down)
+  // and comes back when you scroll up looking for it. Home starts hidden; other pages visible.
   const header = document.querySelector<HTMLElement>('.site-header')!;
   let lastY = window.scrollY;
-  let scrollingDown = false;
+  let scrollingUp = !header.hasAttribute('data-home');
 
   const update = () => {
     const y = window.scrollY;
     // Ignore tiny movements so trackpad jitter doesn't flicker the header.
     if (Math.abs(y - lastY) > 4) {
-      scrollingDown = y > lastY;
+      scrollingUp = y < lastY;
       lastY = y;
     }
     // Always show it while it has keyboard focus or the mobile menu is open.
-    const show = (scrollingDown && y > 0) || header.contains(document.activeElement) || nav.hasAttribute('data-open');
+    const show = scrollingUp || header.contains(document.activeElement) || nav.hasAttribute('data-open');
     header.toggleAttribute('data-visible', show);
   };
 
@@ -85,16 +88,21 @@ const inShop = /^\/(shop|product-category|product)\//.test(Astro.url.pathname);
 </script>
 
 <style>
-  /* Auto-hide: fixed over the page and moved up out of view until data-visible is set. */
+  /* Auto-hide: moved up out of view until data-visible is set. Sticky, so on load it sits
+     in the flow under the notice instead of covering it and the page's top. */
   .site-header {
     background: var(--color-white);
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
     z-index: 90;
     transform: translateY(-100%);
     transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* Home: floats over the full-screen hero, taking no space. */
+  .site-header[data-home] {
+    position: fixed;
+    left: 0;
+    right: 0;
   }
   /* "none" rather than translateY(0): any transform would trap the fixed mobile menu inside the header. */
   .site-header[data-visible] {
