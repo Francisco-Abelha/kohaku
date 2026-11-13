@@ -2,27 +2,24 @@
 import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ProductCard from '../components/ProductCard.astro';
+import JournalList from '../components/JournalList.astro';
+import { priceRange } from '../lib/format';
 import heroImage from '../assets/products/matcha-bowl-primary-scaled.jpg';
 import storyImage from '../assets/products/matcha-lifestyle-scaled.jpg';
-import singleOriginImage from '../assets/products/uji-mockup.jpg';
-import dailyImage from '../assets/products/matcha-latte-warm.jpg';
-import equipmentImage from '../assets/products/matcha-whisk-closeup-scaled.jpg';
 
-// The filter runs on every product; WordPress lists the featured ones by name.
-const featured = (await getCollection('products', (p) => p.data.featured)).sort((a, b) =>
-  a.data.name.localeCompare(b.data.name),
-);
+// Garden index: the featured single-origin teas in the hero's order (Uji, Nishio, Yame),
+// then the featured everyday tea as a quieter last line.
+const regionOrder = ['Uji', 'Nishio', 'Yame'];
+const featured = await getCollection('products', (p) => p.data.featured);
+const gardens = featured
+  .filter((p) => p.data.origin)
+  .sort((a, b) => regionOrder.indexOf(a.data.origin!.region) - regionOrder.indexOf(b.data.origin!.region));
+const everyday = featured.filter((p) => !p.data.origin);
 
 const posts = (await getCollection('journal'))
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 3);
 
-const tiles = [
-  { name: 'Single Origin', href: '/product-category/single-origin/', image: singleOriginImage, alt: 'Kohaku Ceremonial Uji matcha pouch' },
-  { name: 'Daily', href: '/product-category/daily/', image: dailyImage, alt: 'A matcha latte in a dark cup on a pale marble surface' },
-  { name: 'Equipment', href: '/product-category/equipment/', image: equipmentImage, alt: 'A bamboo chasen whisking matcha in a bowl' },
-];
 ---
 
 <BaseLayout fullScreenHero>
@@ -92,37 +89,45 @@ const tiles = [
     />
   </section>
 
-  <section class="section">
-    <h2 class="centered" data-reveal>Where to start</h2>
-    <p class="intro" data-reveal>Three single-origin gardens and one everyday bowl.</p>
-    <ul class="product-grid inner" data-reveal="stagger">
-      {featured.map((product) => <li><ProductCard product={product} /></li>)}
-    </ul>
+  <section class="section gardens">
+    <div class="inner">
+      <h2>Where to start</h2>
+      <ul class="garden-list">
+        {gardens.map((p) => (
+          <li>
+            <a href={`/product/${p.id}/`}>
+              <span class="region">{p.data.origin!.region}</span>
+              <span class="line">{p.data.summary}</span>
+              <span class="price">{priceRange(p.data.variants)}</span>
+            </a>
+          </li>
+        ))}
+        {everyday.map((p) => (
+          <li class="everyday">
+            <a href={`/product/${p.id}/`}>
+              <span class="region">{p.data.name}</span>
+              <span class="line">{p.data.summary}</span>
+              <span class="price">{priceRange(p.data.variants)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <!-- Categories as one sentence of links instead of a tile grid. -->
+      <p class="browse">
+        Or browse <a href="/product-category/single-origin/">single origin</a>,{' '}
+        <a href="/product-category/daily/">daily matcha</a>,{' '}
+        <a href="/product-category/equipment/">equipment</a> and{' '}
+        <a href="/product-category/gift-sets/">gift sets</a>.
+      </p>
+    </div>
   </section>
 
-  <section class="section tiles" aria-label="Shop by category" data-reveal="stagger">
-    {tiles.map((tile) => (
-      <div class="tile">
-        <Image src={tile.image} alt={tile.alt} widths={[400, 800]} sizes="(max-width: 781px) 88vw, 380px" />
-        <h3>{tile.name}</h3>
-        <a href={tile.href}>Shop →</a>
-      </div>
-    ))}
-  </section>
-
-  <section class="section">
-    <h2 class="centered journal-title" data-reveal>From the Journal</h2>
-    <ul class="posts inner" data-reveal="stagger">
-      {posts.map((post) => (
-        <li>
-          <a href={`/${post.id}/`} tabindex="-1" aria-hidden="true">
-            <Image src={post.data.cover} alt="" widths={[400, 768]} sizes="(max-width: 781px) 88vw, 380px" />
-          </a>
-          <a class="post-title" href={`/${post.id}/`}>{post.data.title}</a>
-          <p>{post.data.excerpt}</p>
-        </li>
-      ))}
-    </ul>
+  <section class="section journal">
+    <div class="inner">
+      <h2>From the journal</h2>
+      <JournalList posts={posts} level={3} />
+      <p class="all-posts"><a href="/journal/">All journal posts</a></p>
+    </div>
   </section>
 
   <section class="signup-section" data-reveal>
@@ -151,15 +156,6 @@ const tiles = [
   }
   .section {
     padding: clamp(64px, 8vw, 112px) 24px;
-  }
-  .centered {
-    text-align: center;
-    margin-bottom: 16px;
-  }
-  .intro {
-    text-align: center;
-    font-size: clamp(0.875rem, 0.875rem + ((1vw - 3.2px) * 0.234), 1.0625rem);
-    margin-bottom: 52px;
   }
 
   /* Exactly one screen tall: svh ignores mobile browser bars, so nothing below peeks in. */
@@ -454,90 +450,75 @@ const tiles = [
     color: var(--color-stone-strong);
   }
 
-  .tiles {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 1228px;
-    margin-inline: auto;
-    padding-top: clamp(56px, 7vw, 96px);
+  /* Garden index: one row per garden, the region name set large. */
+  .gardens h2,
+  .journal h2 {
+    margin: 0 0 40px;
   }
-  .tile {
-    position: relative;
-    min-height: 420px;
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-start;
-    color: var(--color-paper);
-    overflow: hidden;
-  }
-  .tile :global(img) {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  /* 40% ink overlay so the white text stays readable on any photo. */
-  .tile::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(26, 26, 26, 0.4);
-  }
-  .tile h3,
-  .tile a {
-    position: relative;
-    z-index: 1;
-  }
-  .tile h3 {
-    font-size: clamp(1.0521rem, 1.052rem + ((1vw - 3.2px) * 0.716), 1.625rem);
-    line-height: 1.3;
-    margin: 0 0 10px;
-  }
-  .tile a {
-    color: var(--color-paper);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    text-decoration: none;
-  }
-  .tile a:hover {
-    text-decoration: underline;
-  }
-
-  .journal-title {
-    margin-bottom: 48px;
-  }
-  .posts {
+  .garden-list {
     list-style: none;
+    margin: 0;
     padding: 0;
+    border-top: 1px solid rgb(139 132 120 / 0.3);
+  }
+  .garden-list li {
+    border-bottom: 1px solid rgb(139 132 120 / 0.3);
+  }
+  .garden-list a {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
-  }
-  .posts :global(img) {
-    width: 100%;
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
-    margin-bottom: 10px;
-  }
-  .post-title {
-    display: block;
-    font-size: 0.875rem;
-    color: var(--color-stone-strong);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr) auto;
+    gap: 16px 4vw;
+    align-items: baseline;
+    padding: 28px 0;
     text-decoration: none;
-    margin-bottom: 6px;
+    color: var(--color-ink);
   }
-  .post-title:hover {
+  .region {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    transition: color 0.3s ease;
+  }
+  .garden-list a:hover .region,
+  .garden-list a:focus-visible .region {
     color: var(--color-matcha);
   }
-  .posts p {
-    font-size: 0.875rem;
-    margin: 0;
+  .line {
+    font-size: 1.0625rem;
+  }
+  .price {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  /* The everyday tea: same row, quieter name. */
+  .everyday .region {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+  }
+  .browse {
+    max-width: 34ch;
+    margin: 56px 0 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.625rem, 2.6vw, 2.25rem);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .browse a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+  }
+  .all-posts {
+    margin: 32px 0 0;
+  }
+  @media (max-width: 781.98px) {
+    .garden-list a {
+      grid-template-columns: 1fr auto;
+    }
+    .region {
+      grid-column: 1 / -1;
+    }
   }
 
   .signup-section {
@@ -585,9 +566,7 @@ const tiles = [
 
   /* WordPress stacks columns below 782px. */
   @media (max-width: 781.98px) {
-    .story,
-    .tiles,
-    .posts {
+    .story {
       grid-template-columns: 1fr;
     }
     .story {
