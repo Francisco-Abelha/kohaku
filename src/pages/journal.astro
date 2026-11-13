@@ -1,27 +1,16 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { formatDate } from '../lib/format';
+import JournalList from '../components/JournalList.astro';
 
 const posts = (await getCollection('journal')).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
 <BaseLayout title="Journal">
   <div class="container journal first-screen">
-    <h1 class="visually-hidden">Journal</h1>
-    <ul class="cards">
-      {posts.map((post) => (
-        <li class="card">
-          <h2><a href={`/${post.id}/`}>{post.data.title}</a></h2>
-          <a href={`/${post.id}/`} tabindex="-1" aria-hidden="true">
-            <Image src={post.data.cover} alt="" widths={[420, 840]} sizes="(max-width: 781px) 88vw, 410px" />
-          </a>
-          <p>{post.data.excerpt}</p>
-          <p class="meta">Kohaku <span aria-hidden="true">/</span> <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time></p>
-        </li>
-      ))}
-    </ul>
+    <h1>Journal</h1>
+    <p class="intro">Notes on gardens, grades and getting a smooth bowl.</p>
+    <JournalList posts={posts} />
   </div>
 </BaseLayout>
 
@@ -29,61 +18,17 @@ const posts = (await getCollection('journal')).sort((a, b) => b.data.date.getTim
   .journal {
     padding: 60px 0 100px;
   }
-  .cards {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 30px;
+  h1 {
+    /* Room for the J's descender above the intro line. */
+    margin: 0 0 0.3em;
+    font-size: clamp(4rem, 10vw, 9.375rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
   }
-  /* White cards with the photo running edge to edge, like Blocksy's "boundless" images. */
-  .card {
-    display: flex;
-    flex-direction: column;
-    background: var(--color-white);
-    padding: 30px;
-  }
-  h2 {
-    font-size: 1.25rem;
-    line-height: 1.4;
-    margin: 0 0 20px;
-  }
-  h2 a {
-    color: var(--color-ink);
-    text-decoration: none;
-  }
-  h2 a:hover {
-    color: var(--color-matcha);
-  }
-  .card :global(img) {
-    width: calc(100% + 60px);
-    max-width: none;
-    margin: 0 -30px 25px;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-  }
-  .card p {
-    margin: 0 0 20px;
-  }
-  .meta {
-    margin-top: auto !important;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-  .meta span {
-    margin: 0 6px;
-  }
-
-  @media (max-width: 999.98px) {
-    .cards {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  @media (max-width: 689.98px) {
-    .cards {
-      grid-template-columns: 1fr;
-    }
+  .intro {
+    max-width: 48ch;
+    margin: 0 0 56px;
+    font-size: 1.125rem;
+    color: var(--color-stone-strong);
   }
 </style>

@@ -1,36 +1,80 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Enso from '../components/Enso.astro';
 ---
 
-<!-- Netlify serves dist/404.html for any URL that doesn't exist. -->
+<!-- Netlify and Vercel serve dist/404.html for any URL that doesn't exist. -->
 <BaseLayout title="Page not found">
-  <div class="container-narrow not-found first-screen">
-    <h1>Oops! That page can’t be found.</h1>
-    <p>It looks like nothing was found at this location. Maybe try the shop or the journal instead.</p>
-    <div class="actions">
-      <a class="button" href="/shop/">Shop</a>
-      <a class="button ghost" href="/journal/">Journal</a>
+  <div class="not-found first-screen">
+    <!-- The ensō stops halfway: the circle that isn't there. -->
+    <Enso />
+    <div class="text">
+      <h1>This page doesn’t exist.</h1>
+      <p>The link may be old, or the address mistyped.</p>
+      <div class="actions">
+        <a class="button" href="/shop/">Go to the shop</a>
+        <a class="button ghost" href="/">Home</a>
+      </div>
     </div>
   </div>
 </BaseLayout>
 
 <style>
-  /* Centred in the full first screen. */
+  /* Centred in the full first screen, over the ensō. */
   .not-found {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 100px 0;
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 100px 24px;
+    overflow: hidden;
     text-align: center;
   }
+  .not-found :global(.enso) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(70svh, 90vw);
+    transform: translate(-50%, -50%) rotate(-8deg);
+  }
+  .not-found :global(.enso path) {
+    fill: none;
+    stroke: var(--color-matcha);
+    stroke-opacity: 0.16;
+    stroke-width: 16;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    /* Drawn only halfway round. */
+    stroke-dashoffset: 0.5;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .not-found :global(.enso path) {
+      animation: half-draw 1.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s both;
+    }
+  }
+  @keyframes half-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+  .text {
+    position: relative;
+  }
   h1 {
-    font-size: 2.5rem;
-    line-height: 1.3;
+    margin: 0 0 16px;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  p {
+    margin: 0;
+    font-size: 1.125rem;
+    color: var(--color-stone-strong);
   }
   .actions {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 10px;
-    margin-top: 30px;
+    margin-top: 32px;
   }
 </style>
