@@ -97,3 +97,9 @@
 **Chose:** connect the repo to Vercel as well as Netlify; each builds every push independently.
 **Alternatives:** stay on Netlify only; move to Vercel only.
 **Why:** Vercel has a connector to a phone app used to check on the site, and running both gives a side-by-side comparison for the agency. The static site needs no host-specific code, so this costs nothing. Phase 3's checkout functions are built for one host through Astro's adapter, so the choice is made there. Vercel's free plan is non-commercial only, which is fine for Kohaku but not for the client sites.
+
+## Nav hides on scroll down, returns on scroll up
+
+**Chose:** the usual pattern: the bar gets out of the way while you read and comes back when you scroll up. Home starts with it hidden over the hero; other pages start with it visible, sticky under the notice.
+**Alternative:** the earlier reverse (revealed by scrolling down, hidden by scrolling up), which was a deliberate experiment.
+**Why:** reviewed against Apple's design principles (familiarity, wayfinding): people already expect this from Safari and most sites, and scrolling up is how they look for navigation.
