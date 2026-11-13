@@ -113,17 +113,22 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
 
     // Show a row's photo on the stage. The new photo unmasks over the previous one, from below
     // when scrolling down and from above when scrolling up.
+    let top = 0;
     const activate = (row: HTMLElement) => {
       if (row === active) return;
       stage.dataset.dir = active && rows.indexOf(row) < rows.indexOf(active) ? 'up' : 'down';
-      figures.forEach((f) => f.classList.remove('was'));
-      if (active) {
-        figures.get(active.dataset.product!)!.classList.replace('active', 'was');
-        active.classList.remove('current');
-      }
-      // Reading layout applies the hidden side (above or below) before the photo animates in.
-      void stage.offsetHeight;
-      figures.get(row.dataset.product!)!.classList.add('active');
+      active?.classList.remove('current');
+      // The new photo restarts from the hidden side (above or below) and wipes in on top of the
+      // stack. Photos underneath are left alone: one interrupted mid-reveal keeps finishing
+      // smoothly beneath instead of jumping to its end state.
+      const figure = figures.get(row.dataset.product!)!;
+      figure.classList.add('reset');
+      figure.classList.remove('shown');
+      void figure.offsetHeight; // apply the hidden state before animating in
+      figure.classList.remove('reset');
+      figure.style.zIndex = String(++top);
+      stage.querySelector('.active')?.classList.remove('active');
+      figure.classList.add('shown', 'active');
       row.classList.add('current');
       active = row;
       updateCounter();
@@ -371,8 +376,9 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     }
   }
 
-  /* Stage photos are stacked. Hidden ones are clipped away on one side; the active one
-     unmasks over the previous one ("was"), and settles from a slight zoom. */
+  /* Stage photos are stacked. Hidden ones are clipped away on one side; a shown one stays
+     shown, and each new photo is raised above the rest (z-index from the script) as it
+     unmasks and settles from a slight zoom. */
   .stage figure {
     position: absolute;
     inset: 0;
@@ -388,28 +394,40 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     object-fit: cover;
     scale: 1.12;
   }
-  .stage figure.was {
-    z-index: 1;
-    clip-path: inset(0);
-  }
-  .stage figure.active {
-    z-index: 2;
+  .stage figure.shown {
     clip-path: inset(0);
     transition: clip-path 0.9s cubic-bezier(0.7, 0, 0.2, 1);
   }
-  .stage figure.active :global(img),
-  .stage figure.was :global(img) {
+  .stage figure.shown :global(img) {
     scale: 1;
     transition: scale 1.4s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  @media (prefers-reduced-motion: reduce) {
-    .stage figure.active,
-    .stage figure.active :global(img),
+  .stage figure.reset,
+  .stage figure.reset :global(img) {
+    transition: none;
+  }
+  /* Increase contrast: rows that aren't in focus stay fully dark. */
+  @media (prefers-contrast: more) {
     .js .text {
+      opacity: 1;
+    }
+  }
+  /* Reduce motion: no wipe or zoom; the new photo cross-fades in, and rows dim quickly. */
+  @media (prefers-reduced-motion: reduce) {
+    .stage figure {
+      opacity: 0;
+    }
+    .stage figure.shown {
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+    .stage figure :global(img),
+    .stage figure.shown :global(img) {
+      scale: 1;
       transition: none;
     }
-    .stage figure :global(img) {
-      scale: 1;
+    .js .text {
+      transition: opacity 0.2s ease;
     }
   }
 </style>

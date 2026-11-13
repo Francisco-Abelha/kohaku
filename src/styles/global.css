@@ -17,6 +17,13 @@
   --container-narrow: min(90vw, 750px);
 }
 
+/* Increase contrast: small grey text becomes full ink. */
+@media (prefers-contrast: more) {
+  :root {
+    --color-stone-strong: var(--color-ink);
+  }
+}
+
 @media (max-width: 689.98px) {
   :root {
     --container: 88vw;
@@ -239,9 +246,17 @@ a:active {
 
 /* Page transitions: the browser animates between pages natively (Chrome, Edge, Safari;
    other browsers simply navigate). Named elements morph; everything else crossfades. */
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
+@view-transition {
+  navigation: auto;
+}
+/* Reduce motion: pages still cross-fade (short), but nothing moves or morphs. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*) {
+    animation: none !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.2s !important;
   }
 }
 ::view-transition-old(root),
