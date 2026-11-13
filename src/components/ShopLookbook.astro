@@ -184,21 +184,22 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
   }
   h1 {
     margin: 0;
-    font-size: clamp(64px, 10vw, 150px);
+    font-size: clamp(4rem, 10vw, 9.375rem);
     line-height: 0.9;
+    letter-spacing: -0.02em;
   }
   .description {
     max-width: 60ch;
     /* Clears the heading's descenders (the g's in "Single Origin"). */
     margin: 0.9em 0 0;
-    font-size: 17px;
+    font-size: 1.0625rem;
     line-height: 1.8;
   }
   .count,
   .place,
   .counter {
     margin: 0;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -222,7 +223,7 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     border: 0;
     background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
     color: var(--color-stone-strong);
-    font: 500 12px/1.5 var(--font-body);
+    font: 500 0.75rem/1.5 var(--font-body);
     letter-spacing: 0.12em;
     text-transform: uppercase;
     cursor: pointer;
@@ -273,7 +274,7 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     content: counter(row, decimal-leading-zero);
     margin-right: 14px;
     font-family: var(--font-display);
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 600;
     letter-spacing: 0;
     /* Cormorant's default old-style figures make "01" read like "OI". */
@@ -282,8 +283,9 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
   }
   h2 {
     margin: 10px 0 16px;
-    font-size: clamp(34px, 3.8vw, 58px);
+    font-size: clamp(2.125rem, 3.8vw, 3.625rem);
     line-height: 1.08;
+    letter-spacing: -0.015em;
   }
   h2 a {
     text-decoration: none;
@@ -300,7 +302,7 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
   .summary {
     max-width: 40ch;
     margin: 0 0 16px;
-    font-size: 18px;
+    font-size: 1.125rem;
   }
   .meta {
     display: flex;

@@ -39,22 +39,29 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.7;
 }
 
+/* Tracking and leading tighten as type grows (large serif reads too airy otherwise);
+   small headings stay near 0 and get more leading. */
 h1,
 h2,
 h3 {
   font-family: var(--font-display);
   font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
   margin: 0 0 0.5em;
 }
-h1 { font-size: 56px; }
-h2 { font-size: 40px; }
-h3 { font-size: 28px; }
-h4 { font-size: 25px; font-weight: 700; line-height: 1.5; }
+h3 {
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+h1 { font-size: 3.5rem; }
+h2 { font-size: 2.5rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5625rem; font-weight: 700; line-height: 1.5; }
 
 main {
   flex: 1;
@@ -103,7 +110,7 @@ img {
   border: 0;
   border-radius: 0;
   padding: 15px 32px;
-  font: 500 13px/1.7 var(--font-body);
+  font: 500 0.8125rem/1.7 var(--font-body);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
@@ -112,6 +119,38 @@ img {
 .button:hover {
   background: var(--color-ink);
   color: var(--color-paper);
+}
+
+/* Press feedback: things react the moment they're pressed, not when the next page arrives.
+   The grey tap flash on phones is replaced by these states. */
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+.button {
+  transition: scale 0.1s ease-out;
+}
+.button:active {
+  scale: 0.97;
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+a:active {
+  color: var(--color-matcha);
+}
+.tabs button:active,
+.tabs a:active,
+[role='tab']:active,
+.menu-toggle:active,
+.menu-close:active {
+  opacity: 0.6;
+}
+.options span:active {
+  background: var(--color-sand);
+}
+@media (prefers-reduced-motion: reduce) {
+  .button:active {
+    scale: none;
+  }
 }
 
 /* Secondary button: text only, like "All Tea" on the home page. */
@@ -132,7 +171,7 @@ img {
 
 /* Small page title above content pages, like the WordPress theme's page header. */
 .page-title {
-  font-size: 30px;
+  font-size: 1.875rem;
   /* Only top and bottom: the sides stay auto so .container can centre it. */
   margin-block: 0;
   padding-top: 60px;
@@ -140,16 +179,16 @@ img {
 
 /* Long-form text: journal posts and policy pages. */
 .prose {
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.75;
 }
 .prose h2 {
-  font-size: 40px;
+  font-size: 2.5rem;
   line-height: 1.3;
   margin: 1.4em 0 0.6em;
 }
 .prose h3 {
-  font-size: 28px;
+  font-size: 1.75rem;
   line-height: 1.3;
   margin: 1.2em 0 0.5em;
 }
@@ -167,7 +206,7 @@ img {
   background: transparent;
   color: var(--color-ink);
   font: inherit;
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 .field:focus {
   outline: 2px solid var(--color-matcha);
