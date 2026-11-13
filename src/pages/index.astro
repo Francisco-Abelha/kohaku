@@ -36,8 +36,8 @@ const posts = (await getCollection('journal'))
       </h1>
       <p class="intro-in" style="--d: 0.8s">Single-origin, stone-milled, and shipped within weeks of harvest.</p>
       <div class="actions intro-in" style="--d: 1s">
-        <a class="button" href="/product-category/single-origin/">Shop Single Origin</a>
-        <a class="button ghost" href="/shop/">All Tea</a>
+        <a class="button" href="/product-category/single-origin/">Shop single origin</a>
+        <a class="button ghost" href="/shop/">All tea</a>
       </div>
     </div>
 
@@ -64,7 +64,6 @@ const posts = (await getCollection('journal'))
 
   <section class="section story">
     <div class="story-text">
-      <p class="eyebrow">Our story</p>
       <h2>Four gardens, kept apart.</h2>
       <p>
         Kohaku began with a small frustration: nearly every matcha sold abroad is blended, and blending averages
@@ -72,7 +71,7 @@ const posts = (await getCollection('journal'))
         harvest separate — whatever that costs us in consistency. The tea changes from one year to the next. We
         think that is the point.
       </p>
-      <p class="more"><a href="/about/">Read our story →</a></p>
+      <p class="more"><a href="/about/">Read our story</a></p>
     </div>
     <Image
       src={storyImage}
@@ -123,7 +122,7 @@ const posts = (await getCollection('journal'))
     </div>
   </section>
 
-  <section class="signup-section" data-reveal>
+  <section class="signup-section">
     <hr />
     <h2>Brewing guides and seasonal launches</h2>
     <p>A short letter when a new harvest lands. Nothing else.</p>
@@ -416,14 +415,6 @@ const posts = (await getCollection('journal'))
     margin-inline: auto;
     padding-block: clamp(72px, 9vw, 128px);
   }
-  .eyebrow {
-    color: var(--color-matcha);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }
   .story h2 {
     margin-bottom: 24px;
   }
@@ -433,14 +424,14 @@ const posts = (await getCollection('journal'))
     margin-bottom: 28px;
   }
   .more {
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     margin: 0;
   }
   .more a {
-    color: var(--color-stone-strong);
+    color: var(--color-ink);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
   }
 
   /* Garden index: one row per garden, the region name set large. */

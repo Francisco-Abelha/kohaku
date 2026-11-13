@@ -64,13 +64,12 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
             </figure>
           ))}
         </div>
-        <p class="counter" aria-hidden="true"></p>
       </div>
     </div>
 
     <ol class="rows">
       {products.map((product) => (
-        <li class="row" data-product={product.id} data-category={product.data.category} data-place={place(product)} data-reveal>
+        <li class="row" data-product={product.id} data-category={product.data.category}>
           <div class="row-photo">
             <Image
               src={product.data.images[0].src}
@@ -80,12 +79,12 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
             />
           </div>
           <div class="text">
-            <p class="place"><span class="num"></span>{place(product)}</p>
+            <p class="place">{place(product)}</p>
             <h2><a href={`/product/${product.id}/`}><span>{product.data.name}</span></a></h2>
             <p class="summary">{product.data.summary}</p>
             <p class="meta">
               <strong>{priceRange(product.data.variants)}</strong>
-              {product.data.variants.length > 1 && <span>{product.data.variants.map((v) => v.label).join(' · ')}</span>}
+              {product.data.variants.length > 1 && <span>{product.data.variants.map((v) => v.label).join(', ')}</span>}
             </p>
             <a class="button" href={`/product/${product.id}/`} tabindex="-1" aria-hidden="true">View product</a>
           </div>
@@ -102,13 +101,11 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     const rows = [...root.querySelectorAll<HTMLElement>('.row')];
     const stage = root.querySelector<HTMLElement>('.stage')!;
     const figures = new Map([...stage.querySelectorAll<HTMLElement>('figure')].map((f) => [f.dataset.product!, f]));
-    const counter = root.querySelector<HTMLElement>('.counter')!;
     const count = root.querySelector<HTMLElement>('.count')!;
     const tabGroup = root.querySelector<HTMLElement>('.tabs')!;
     const tabs = [...tabGroup.querySelectorAll<HTMLButtonElement>('button')]; // none on category pages
     const categories = new Set(tabs.map((t) => t.dataset.filter));
     const motionOK = matchMedia('(prefers-reduced-motion: no-preference)').matches;
-    const pad = (n: number) => String(n).padStart(2, '0');
     let active: HTMLElement | undefined;
 
     // Show a row's photo on the stage. The new photo unmasks over the previous one, from below
@@ -131,11 +128,6 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
       figure.classList.add('shown', 'active');
       row.classList.add('current');
       active = row;
-      updateCounter();
-    };
-    const updateCounter = () => {
-      const visible = rows.filter((r) => !r.hidden);
-      counter.textContent = `${pad(visible.indexOf(active!) + 1)} / ${pad(visible.length)} · ${active!.dataset.place}`;
     };
 
     // A row becomes active when it crosses the horizontal middle of the screen.
@@ -156,7 +148,6 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
       const visible = rows.filter((r) => !r.hidden);
       count.textContent = visible.length === 1 ? '1 product' : `${visible.length} products`;
       if (active?.hidden) activate(visible[0]);
-      else updateCounter();
       // Scrolled down a long list that just got shorter: go back to its top.
       if (root.getBoundingClientRect().top < 0) root.querySelector('.layout')!.scrollIntoView();
     };
@@ -201,13 +192,10 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     line-height: 1.8;
   }
   .count,
-  .place,
-  .counter {
+  .place {
     margin: 0;
-    font-size: 0.75rem;
+    font-size: 0.9375rem;
     font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
     color: var(--color-stone-strong);
   }
 
@@ -228,9 +216,7 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     border: 0;
     background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
     color: var(--color-stone-strong);
-    font: 500 0.75rem/1.5 var(--font-body);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font: 500 0.9375rem/1.5 var(--font-body);
     cursor: pointer;
     transition:
       color 0.3s ease,
@@ -246,9 +232,8 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     background-size: 100% 1px;
   }
 
-  /* The stage and counter only exist on wide screens with JavaScript (below). */
-  .stage,
-  .counter {
+  /* The stage only exists on wide screens with JavaScript (below). */
+  .stage {
     display: none;
   }
 
@@ -256,12 +241,8 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     list-style: none;
     margin: 0;
     padding: 0;
-    /* Numbers come from a CSS counter; hidden (filtered-out) rows don't count, so the
-       visible ones always read 01, 02, 03… */
-    counter-reset: row;
   }
   .row {
-    counter-increment: row;
     display: grid;
     gap: 24px;
     padding-block: 48px;
@@ -274,17 +255,6 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
-  }
-  .num::before {
-    content: counter(row, decimal-leading-zero);
-    margin-right: 14px;
-    font-family: var(--font-display);
-    font-size: 1.125rem;
-    font-weight: 600;
-    letter-spacing: 0;
-    /* Cormorant's default old-style figures make "01" read like "OI". */
-    font-variant-numeric: lining-nums;
-    color: var(--color-matcha);
   }
   h2 {
     margin: 10px 0 16px;
@@ -347,10 +317,6 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
       flex: 1;
       overflow: hidden;
       background: var(--color-sand);
-    }
-    .js .counter {
-      display: block;
-      margin-top: 14px;
     }
     .js .row {
       display: flex;

@@ -109,3 +109,9 @@
 **Chose:** stacked photos beside a sticky purchase panel (a scroll-snap row on phones), and the WooCommerce tabs replaced by sections: description, a tasting-notes pull-quote, care, details, and "How to prepare" as a full-width matcha-green band with the recipe's amounts set large. Recipes are parsed from the content's bold recipe lines by `src/lib/recipe.ts` (tested), falling back to plain text.
 **Alternatives:** a full-bleed hero photo with a slide-up purchase bar; a "museum label" layout; keeping the tabs or an accordion.
 **Why:** the old first screen ran out halfway down; tabs hide the most distinctive content (the recipes) behind clicks. The matcha band answers the design review's call for one bold use of the brand colour. Scroll-snap gives phones native swipe momentum with no JavaScript.
+
+## Instrument Sans for body text; capitals only for place names
+
+**Chose:** Instrument Sans (self-hosted through the Fonts API) instead of Inter, sentence case for the nav, buttons, labels and tabs, and spaced capitals kept only for place names (the gardens, the hero's corner labels) and the wordmark.
+**Alternatives:** keep Inter; Newsreader for an all-serif site.
+**Why:** a design review flagged Inter as the most default web font and the tracked-capital labels, dot separators, arrows and decorative numbering as template habits. Instrument Sans has more character while staying clearly distinct from the Cormorant display serif.

@@ -21,8 +21,7 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <Font cssVariable="--font-inter" preload />
+    <Font cssVariable="--font-instrument" preload />
     <Font cssVariable="--font-cormorant" preload />
     <title>{fullTitle}</title>
     <!-- Must run before the page's first paint, so it's an inline script in <head>.
@@ -50,7 +49,7 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <p class:list={['notice', { overlay: fullScreenHero }]}>Concept store · no real orders are taken</p>
+    <p class:list={['notice', { overlay: fullScreenHero }]}>Concept store. No real orders are taken.</p>
     <Header />
     <main id="main">
       <slot />
@@ -60,39 +59,6 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
 </html>
 
 <script>
-  // Scroll reveals: [data-reveal] elements fade up the first time they scroll into view.
-  // Skipped entirely under reduced motion, so nothing is ever hidden for those visitors.
-  const revealables = document.querySelectorAll<HTMLElement>('[data-reveal]');
-  if (revealables.length && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
-    for (const group of document.querySelectorAll<HTMLElement>('[data-reveal="stagger"]')) {
-      [...group.children].forEach((child, i) => (child as HTMLElement).style.setProperty('--reveal-delay', `${i * 90}ms`));
-    }
-    // IntersectionObserver reports when an element enters the viewport, without a scroll listener.
-    // The negative bottom margin waits until an element is 12% of the way up the screen.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          entry.target.classList.add('is-revealed');
-          observer.unobserve(entry.target); // reveal once, never hide again
-        }
-      },
-      { rootMargin: '0px 0px -12% 0px' },
-    );
-    // Coming back with the back/forward buttons, whatever is already on screen shows at once:
-    // replaying the fade there would fight the photo morphing back into its card.
-    const returning = (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined)?.type === 'back_forward';
-    for (const el of revealables) {
-      if (returning && el.getBoundingClientRect().top < innerHeight * 0.88) el.classList.add('is-revealed');
-    }
-    document.documentElement.classList.add('reveal-ready');
-    // Reading a layout value makes the browser apply the hidden state right now. Without it,
-    // elements already on screen would be hidden and revealed in the same frame, so they'd
-    // just appear instead of animating in.
-    void document.body.offsetHeight;
-    revealables.forEach((el) => el.classList.contains('is-revealed') || observer.observe(el));
-  }
-
   // Page transitions, going forward: tag only the clicked card's photo, so just that
   // one photo morphs into the product page (its gallery carries the same tag).
   document.addEventListener('click', (event) => {

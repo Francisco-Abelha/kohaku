@@ -35,7 +35,6 @@ const gardens = [
   <canvas class="dust" aria-hidden="true"></canvas>
 
   <section class="hero">
-    <p class="eyebrow">Our story</p>
     <!-- Two beats: the second line rises more slowly than the first. -->
     <h1>
       <span class="line"><span>Nothing blended.</span></span>{' '}<span class="line slow"><span>Nothing hurried.</span></span>
@@ -119,7 +118,7 @@ const gardens = [
         </div>
       ))}
     </div>
-    <p class="more"><a href="/why-origin-matters/">More on why origin matters →</a></p>
+    <p class="more"><a href="/why-origin-matters/">More on why origin matters</a></p>
   </section>
 
   <section class="block last">
@@ -148,8 +147,8 @@ const gardens = [
       blending. We would rather tell you which year you are drinking.
     </p>
     <div class="actions">
-      <a class="button" href="/product-category/single-origin/">Shop Single Origin</a>
-      <a class="button ghost" href="/journal/">Read the Journal</a>
+      <a class="button" href="/product-category/single-origin/">Shop single origin</a>
+      <a class="button ghost" href="/journal/">Read the journal</a>
     </div>
   </section>
 </BaseLayout>
@@ -254,6 +253,7 @@ const gardens = [
     line-height: 1.8;
     margin-bottom: 20px;
   }
+  /* Spaced capitals are kept for one job only: place names (the gardens). */
   .eyebrow {
     color: var(--color-matcha);
     font-family: var(--font-body);
@@ -269,9 +269,6 @@ const gardens = [
     margin: 0 auto;
     padding-block: clamp(80px, 10vw, 140px) clamp(56px, 7vw, 88px);
     text-align: center;
-  }
-  .hero .eyebrow {
-    margin-bottom: 22px;
   }
   .hero h1 {
     font-size: clamp(2.375rem, 5.5vw, 3.875rem);
@@ -330,9 +327,6 @@ const gardens = [
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .hero .eyebrow {
-      animation: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both;
-    }
     .line > span {
       animation: rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s both;
     }
@@ -463,14 +457,14 @@ const gardens = [
     margin: 0;
   }
   .more {
-    margin-top: 44px;
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    margin: 44px 0 0;
   }
   .more a {
-    color: var(--color-stone-strong);
+    color: var(--color-ink);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
   }
   hr {
     height: 1px;
