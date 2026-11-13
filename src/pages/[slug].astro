@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatDate } from '../lib/format';
@@ -20,15 +21,25 @@ const { Content } = await render(post);
 ---
 
 <BaseLayout title={post.data.title}>
-  <article class="container-narrow post first-screen">
-    <header>
+  <article class="post first-screen">
+    <header class="container-narrow">
       <h1>{post.data.title}</h1>
       <p class="excerpt">{post.data.excerpt}</p>
       <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
     </header>
-    <div class="prose">
+    <!-- Wider than the text column, so the photo opens the post. -->
+    <Image
+      class="cover"
+      src={post.data.cover}
+      alt={post.data.coverAlt}
+      widths={[800, 1400, 2000]}
+      sizes="(max-width: 999px) 100vw, min(90vw, 1100px)"
+      loading="eager"
+    />
+    <div class="container-narrow prose">
       <Content />
     </div>
+    <p class="container-narrow back"><a href="/journal/">All journal posts</a></p>
   </article>
 </BaseLayout>
 
@@ -36,20 +47,40 @@ const { Content } = await render(post);
   .post {
     padding: 60px 0 100px;
   }
+  /* The post title is the largest type on the page, above the body's section headings. */
   h1 {
-    font-size: 1.875rem;
-    margin-bottom: 15px;
+    margin: 0 0 20px;
+    font-size: clamp(2.75rem, 5.5vw, 4.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
   }
   .excerpt {
-    margin-bottom: 15px;
+    margin: 0 0 20px;
+    font-size: 1.25rem;
+    line-height: 1.6;
   }
   time {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    color: var(--color-stone-strong);
   }
-  .prose {
-    margin-top: 50px;
+  .post :global(.cover) {
+    display: block;
+    width: min(90vw, 1100px);
+    margin: 56px auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  @media (max-width: 999.98px) {
+    .post :global(.cover) {
+      width: 100%;
+    }
+  }
+  .prose :global(h2) {
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+  }
+  .back {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid rgb(139 132 120 / 0.3);
   }
 </style>
