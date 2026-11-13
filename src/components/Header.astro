@@ -41,6 +41,8 @@ const isHome = Astro.url.pathname === '/';
           <li style={`--i: ${i + 1}`}><a href={l.href} aria-current={current(l.href)}>{l.name}</a></li>
         ))}
       </ul>
+      <!-- Phones: closes the full-screen menu with the tagline instead of empty space. -->
+      <p class="menu-foot" aria-hidden="true">Matcha, considered.</p>
     </nav>
   </div>
 </header>
@@ -245,6 +247,9 @@ const isHome = Astro.url.pathname === '/';
     color: rgba(255, 255, 255, 0.7);
   }
 
+  .menu-foot {
+    display: none;
+  }
   .menu-toggle,
   .menu-close {
     display: none;
@@ -266,6 +271,8 @@ const isHome = Astro.url.pathname === '/';
       display: block;
     }
     .nav {
+      display: flex;
+      flex-direction: column;
       position: fixed;
       inset: 0;
       z-index: 100;
@@ -344,6 +351,22 @@ const isHome = Astro.url.pathname === '/';
       letter-spacing: 0.15em;
       text-transform: uppercase;
       color: var(--color-stone-strong);
+    }
+    .menu-foot {
+      display: block;
+      margin: auto 0 0;
+      padding-top: 48px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(1.5rem, 6vw, 2rem);
+      letter-spacing: -0.01em;
+      color: var(--color-matcha);
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .nav[data-open] .menu-foot {
+      opacity: 1;
+      transition: opacity 0.6s ease 0.6s;
     }
     /* The page behind doesn't scroll while the menu is open. */
     :global(html:has(.nav[data-open])) {
