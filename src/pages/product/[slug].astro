@@ -1,10 +1,11 @@
 ---
+import { Image } from 'astro:assets';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ProductCard from '../../components/ProductCard.astro';
 import ProductGallery from '../../components/ProductGallery.astro';
-import { categoryNames } from '../../data/categories';
+import { categoryNames, type Category } from '../../data/categories';
 import { formatPrice, priceRange } from '../../lib/format';
+import { leadSentences, parseRecipes } from '../../lib/recipe';
 import { paragraphsToHtml } from '../../lib/text';
 
 // One page per product file: /product/ceremonial-matcha-uji/ and so on.
@@ -21,44 +22,54 @@ interface Props {
 const { product, products } = Astro.props;
 const { name, category, variants, origin, grade, summary, description, tabs, images } = product.data;
 const categoryHref = `/product-category/${category}/`;
+const place = origin ? `${origin.region}, ${origin.prefecture}` : categoryNames[category];
 
-// WooCommerce's "Additional information" tab: only for products with these details.
-const details = [
-  ...(variants.some((v) => v.grams) ? [{ label: 'Size', value: variants.map((v) => v.label).join(', ') }] : []),
-  ...(origin ? [{ label: 'Origin', value: origin.region }] : []),
+const aboutHeading: Record<Category, string> = {
+  'single-origin': 'About this tea',
+  daily: 'About this tea',
+  equipment: 'About this piece',
+  'gift-sets': 'In the box',
+};
+
+// The content's tabs, by title. Teas have tasting notes and a recipe; equipment has care.
+const tab = (title: RegExp) => tabs.find((t) => title.test(t.title));
+const tasting = tab(/tasting/i);
+const tastingParts = tasting && leadSentences(tasting.body);
+const prepare = tab(/prepare/i);
+const recipes = prepare ? parseRecipes(prepare.body) : [];
+const care = tab(/care/i);
+
+const specs = [
+  ...(origin ? [{ label: 'Origin', value: `${origin.region}, ${origin.prefecture} Prefecture` }] : []),
   ...(grade ? [{ label: 'Grade', value: grade }] : []),
-];
-
-const panels = [
-  { id: 'description', title: 'Description', html: paragraphsToHtml(description) },
-  ...tabs.map((tab, i) => ({ id: `tab-${i}`, title: tab.title, html: paragraphsToHtml(tab.body) })),
+  ...(variants.length > 1 ? [{ label: 'Sizes', value: variants.map((v) => v.label).join(', ') }] : []),
 ];
 
 const related = products
   .filter((p) => p.data.category === category && p.id !== product.id)
   .sort((a, b) => a.data.name.localeCompare(b.data.name))
-  .slice(0, 4);
+  .slice(0, 3);
 ---
 
 <BaseLayout title={name}>
   <div class="container product">
-    <div class="first-screen">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-      <ol>
-        <li><a href="/">Home</a></li>
-        <li><a href={categoryHref}>{categoryNames[category]}</a></li>
-        <li aria-current="page">{name}</li>
-      </ol>
-    </nav>
-
-    <div class="top">
+    <div class="top first-screen">
       <ProductGallery images={images} />
 
-      <div class="summary">
+      <!-- Pinned beside the photos on wide screens. -->
+      <div class="panel">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="/shop/">Shop</a></li>
+            <li><a href={categoryHref}>{categoryNames[category]}</a></li>
+          </ol>
+        </nav>
+        <p class="place">{place}</p>
         <h1>{name}</h1>
-        <!-- The script below swaps the range for the chosen size's price. -->
+        <p class="summary">{summary}</p>
+
+        <!-- The script swaps the range for the chosen size's price and rolls the digits that change. -->
         <p class="price" aria-live="polite">{priceRange(variants)}</p>
-        <div class="short" set:html={paragraphsToHtml(summary)} />
 
         {variants.length > 1 && (
           <fieldset class="sizes">
@@ -66,7 +77,14 @@ const related = products
             <div class="options">
               {variants.map((variant, i) => (
                 <label>
-                  <input type="radio" name="size" value={variant.label} data-price={formatPrice(variant.priceCents)} checked={i === 0} />
+                  <input
+                    type="radio"
+                    name="size"
+                    value={variant.label}
+                    data-price={formatPrice(variant.priceCents)}
+                    data-cents={variant.priceCents}
+                    checked={i === 0}
+                  />
                   <span>{variant.label}</span>
                 </label>
               ))}
@@ -74,161 +92,225 @@ const related = products
           </fieldset>
         )}
 
-        <p class="meta">
-          <span>Category:</span> <a href={categoryHref}>{categoryNames[category]}</a>
-        </p>
+        <!-- shortcut: only shows a note; phase 3 makes this button add to the real cart. -->
+        <button class="button buy" type="button">Add to cart</button>
+        <p class="buy-note" role="status" hidden>Checkout opens soon. This is a concept store, so nothing is charged.</p>
       </div>
     </div>
 
-    </div>
-
-    <section class="tabs-section" aria-label="Product information">
-      <!-- Hidden until the script runs; without JavaScript every panel is shown in turn. -->
-      <div class="tablist" role="tablist" hidden>
-        {[...panels, ...(details.length ? [{ id: 'details', title: 'Additional information' }] : [])].map((panel, i) => (
-          <button type="button" role="tab" id={`tab-button-${panel.id}`} aria-controls={`panel-${panel.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
-            {panel.title}
-          </button>
-        ))}
-      </div>
-      {panels.map((panel) => (
-        <div class="panel" id={`panel-${panel.id}`} role="tabpanel" aria-labelledby={`tab-button-${panel.id}`}>
-          <h2 class="visually-hidden">{panel.title}</h2>
-          <div set:html={panel.html} />
-        </div>
-      ))}
-      {details.length > 0 && (
-        <div class="panel" id="panel-details" role="tabpanel" aria-labelledby="tab-button-details">
-          <h2 class="visually-hidden">Additional information</h2>
-          <table>
-            {details.map((row) => (
-              <tr><th scope="row">{row.label}</th><td>{row.value}</td></tr>
-            ))}
-          </table>
-        </div>
-      )}
+    <section class="block">
+      <h2>{aboutHeading[category]}</h2>
+      <div class="prose" set:html={paragraphsToHtml(description)} />
     </section>
 
-    {related.length > 0 && (
-      <section class="related">
-        <h2>Related products</h2>
-        <ul class="product-grid">
-          {related.map((p) => <li><ProductCard product={p} /></li>)}
-        </ul>
+    {tastingParts && (
+      <section class="block tasting">
+        <h2>Tasting notes</h2>
+        <div>
+          <blockquote>{tastingParts.lead}</blockquote>
+          {tastingParts.rest && <div class="prose" set:html={paragraphsToHtml(tastingParts.rest)} />}
+        </div>
+      </section>
+    )}
+
+    {care && (
+      <section class="block">
+        <h2>Care</h2>
+        <div class="prose" set:html={paragraphsToHtml(care.body)} />
+      </section>
+    )}
+
+    {specs.length > 0 && (
+      <section class="block">
+        <h2>Details</h2>
+        <dl class="specs">
+          {specs.map((s) => (
+            <div><dt>{s.label}</dt><dd>{s.value}</dd></div>
+          ))}
+        </dl>
       </section>
     )}
   </div>
+
+  <!-- The page's one bold moment: the recipe, full width on matcha green. Text that doesn't
+       follow the recipe pattern is shown as plain paragraphs instead. -->
+  {prepare && (
+    <section class="prepare">
+      <div class="container">
+        <h2>How to prepare</h2>
+        {recipes.length ? (
+          recipes.map((recipe) => (
+            <div class="recipe">
+              {recipe.title && <h3>{recipe.title}</h3>}
+              <dl class="amounts">
+                {recipe.items.map((item) => (
+                  <div><dt>{item.label}</dt><dd>{item.amount}</dd></div>
+                ))}
+              </dl>
+              <div class="steps" set:html={paragraphsToHtml(recipe.steps.join('\n\n'))} />
+            </div>
+          ))
+        ) : (
+          <div class="steps" set:html={paragraphsToHtml(prepare.body)} />
+        )}
+      </div>
+    </section>
+  )}
+
+  {related.length > 0 && (
+    <section class="container related">
+      <h2>More {categoryNames[category]}</h2>
+      <ul>
+        {related.map((p) => (
+          <li>
+            <!-- data-product: the photo morphs into that product's page (BaseLayout). -->
+            <article data-product={p.id}>
+              <a href={`/product/${p.id}/`}>
+                <Image src={p.data.images[0].src} alt={p.data.images[0].alt} widths={[400, 800]} sizes="(max-width: 689px) 88vw, 30vw" />
+                <h3>{p.data.name}</h3>
+                <p>{priceRange(p.data.variants)}</p>
+              </a>
+            </article>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
 </BaseLayout>
 
 <script>
-  // Size buttons: show the chosen size's price.
-  const price = document.querySelector<HTMLElement>('.summary .price')!;
-  const sizes = document.querySelectorAll<HTMLInputElement>('.sizes input');
-  const showPrice = () => {
-    const checked = [...sizes].find((input) => input.checked);
-    if (checked) price.textContent = checked.dataset.price!;
-  };
-  sizes.forEach((input) => input.addEventListener('change', showPrice));
-  showPrice();
+  const price = document.querySelector<HTMLElement>('.panel .price')!;
+  const sizes = [...document.querySelectorAll<HTMLInputElement>('.sizes input')];
+  const motionOK = matchMedia('(prefers-reduced-motion: no-preference)').matches;
+  let cents = 0;
 
-  // Tabs, following the WAI-ARIA tabs pattern: click or arrow keys to switch.
-  const tabs = [...document.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
-  const select = (tab: HTMLButtonElement) => {
-    for (const t of tabs) {
-      const selected = t === tab;
-      t.setAttribute('aria-selected', String(selected));
-      t.tabIndex = selected ? 0 : -1;
-      document.getElementById(t.getAttribute('aria-controls')!)!.hidden = !selected;
-    }
+  // Write the new price one character per span, and roll in only the characters that changed:
+  // from below when the price goes up, from above when it goes down. Prices are compared from
+  // the right, so "$42.00" against "$98.00" changes only the "42".
+  const setPrice = (text: string, direction: number) => {
+    const before = (price.textContent ?? '').padStart(text.length);
+    const offset = before.length - text.length;
+    price.replaceChildren(
+      ...[...text].map((char, i) => {
+        const span = document.createElement('span');
+        span.textContent = char;
+        if (direction && motionOK && before[i + offset] !== char) {
+          span.animate(
+            [{ translate: `0 ${direction * 0.6}em`, opacity: 0 }, { translate: '0 0', opacity: 1 }],
+            { duration: 320, delay: i * 18, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)', fill: 'backwards' },
+          );
+        }
+        return span;
+      }),
+    );
   };
-  tabs.forEach((tab, i) => {
-    tab.addEventListener('click', () => select(tab));
-    tab.addEventListener('keydown', (event) => {
-      const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
-      if (!step) return;
-      const next = tabs[(i + step + tabs.length) % tabs.length];
-      select(next);
-      next.focus();
-    });
-  });
-  document.querySelector<HTMLElement>('[role="tablist"]')!.hidden = false;
-  select(tabs[0]);
+
+  const showPrice = (animate: boolean) => {
+    const checked = sizes.find((input) => input.checked);
+    if (!checked) return;
+    const next = Number(checked.dataset.cents);
+    setPrice(checked.dataset.price!, animate ? Math.sign(next - cents) : 0);
+    cents = next;
+  };
+  sizes.forEach((input) => input.addEventListener('change', () => showPrice(true)));
+  showPrice(false);
+
+  const note = document.querySelector<HTMLElement>('.buy-note')!;
+  document.querySelector('.buy')!.addEventListener('click', () => (note.hidden = false));
 </script>
 
 <style>
   .product {
-    padding: 60px 0 100px;
+    padding: 40px 0 0;
+  }
+  /* Phones: the edge-to-edge photo row starts right under the nav. */
+  @media (max-width: 999.98px) {
+    .product {
+      padding-top: 0;
+    }
+  }
+
+  /* --- First screen: photos and the purchase panel --- */
+  .top {
+    display: grid;
+    gap: 32px;
+    align-content: start;
+  }
+  @media (min-width: 1000px) {
+    .top {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: 6vw;
+      align-items: start;
+    }
+    .panel {
+      position: sticky;
+      /* Clears the nav when it slides back in. */
+      top: 104px;
+      padding-top: 8px;
+    }
   }
 
   .breadcrumbs ol {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 0;
-    list-style: none;
-    margin: 0 0 40px;
+    gap: 8px;
+    margin: 0 0 28px;
     padding: 0;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
+    list-style: none;
+    font-size: 0.875rem;
+    color: var(--color-stone-strong);
   }
   .breadcrumbs li + li::before {
-    content: '›';
-    margin: 0 12px;
+    content: '/';
+    margin-right: 8px;
   }
   .breadcrumbs a {
-    color: var(--color-stone-strong);
     text-decoration: none;
   }
-  .breadcrumbs a:hover {
-    color: var(--color-matcha);
+  .place {
+    margin: 0 0 6px;
+    font-size: 0.9375rem;
+    color: var(--color-stone-strong);
   }
-
-  .top {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    align-items: start;
-  }
-
   h1 {
-    font-size: 2.75rem;
-    line-height: 1.3;
-    margin: 0 0 10px;
+    margin: 0 0 16px;
+    font-size: clamp(2.5rem, 4vw, 3.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .summary {
+    max-width: 36ch;
+    margin: 0 0 28px;
+    font-size: 1.125rem;
   }
   .price {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0 0 35px;
+    margin: 0 0 24px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    /* The rolling digits appear from inside the line, not from outside it. */
+    overflow: hidden;
   }
-  .short :global(p) {
-    font-size: 1.0625rem;
-    margin: 0;
-  }
-  .short {
-    padding-bottom: 35px;
-    border-bottom: 1px solid var(--color-stone);
-    margin-bottom: 35px;
+  .price :global(span) {
+    display: inline-block;
+    white-space: pre;
   }
 
   .sizes {
+    margin: 0 0 24px;
+    padding: 0;
     border: 0;
-    border-bottom: 1px solid var(--color-stone);
-    margin: 0 0 35px;
-    padding: 0 0 35px;
   }
   .sizes legend {
+    margin-bottom: 10px;
     padding: 0;
-    margin-bottom: 12px;
-    color: var(--color-matcha);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    color: var(--color-stone-strong);
   }
   .options {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
   }
   /* The radio buttons stay in the page for keyboards and screen readers; the label is what you see. */
   .options input {
@@ -237,103 +319,183 @@ const related = products
   }
   .options span {
     display: inline-block;
-    min-width: 80px;
-    padding: 12px 20px;
+    min-width: 76px;
+    padding: 10px 18px;
     border: 1px solid var(--color-stone);
+    border-radius: 999px;
     text-align: center;
     font-size: 0.875rem;
     cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
   }
   .options input:checked + span {
-    background: var(--color-matcha);
-    border-color: var(--color-matcha);
+    background: var(--color-ink);
+    border-color: var(--color-ink);
     color: var(--color-paper);
   }
   .options input:focus-visible + span {
-    outline: 2px solid var(--color-ink);
+    outline: 2px solid var(--color-matcha);
     outline-offset: 2px;
   }
 
-  .meta {
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
+  .buy {
+    width: 100%;
+    max-width: 420px;
   }
-  .meta span {
-    font-weight: 700;
-  }
-  .meta a {
+  .buy-note {
+    max-width: 420px;
+    margin: 12px 0 0;
+    font-size: 0.875rem;
     color: var(--color-stone-strong);
-    text-decoration: none;
   }
 
-  .tabs-section {
-    margin-top: 100px;
+  /* --- Editorial sections: heading on the left, text on the right --- */
+  .block {
+    display: grid;
+    gap: 16px 6vw;
+    padding: 72px 0;
+    border-top: 1px solid rgb(139 132 120 / 0.3);
   }
-  .tablist {
+  .top + .block {
+    margin-top: 80px;
+  }
+  @media (min-width: 1000px) {
+    .block {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    }
+  }
+  .block h2 {
+    margin: 0;
+    font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+  }
+  .block .prose {
+    max-width: 62ch;
+    font-size: 1.0625rem;
+  }
+  .block .prose :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  blockquote {
+    max-width: 30ch;
+    margin: 0 0 32px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 3vw, 2.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+  .specs {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+  }
+  .specs div {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 16px;
+  }
+  .specs dt {
+    color: var(--color-stone-strong);
+  }
+  .specs dd {
+    margin: 0;
+  }
+
+  /* --- How to prepare: full width, matcha green, the recipe's numbers set large --- */
+  .prepare {
+    margin-top: 40px;
+    padding: clamp(72px, 9vw, 128px) 0;
+    background: var(--color-matcha);
+    color: var(--color-paper);
+  }
+  .prepare h2 {
+    margin: 0 0 48px;
+    font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+  }
+  .recipe + .recipe {
+    margin-top: 72px;
+    padding-top: 56px;
+    border-top: 1px solid rgb(248 246 241 / 0.25);
+  }
+  .recipe h3 {
+    margin: 0 0 20px;
+    font-size: 1.5rem;
+  }
+  .amounts {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    border-bottom: 1px solid var(--color-stone);
-    margin-bottom: 60px;
+    gap: 24px clamp(40px, 7vw, 120px);
+    margin: 0 0 40px;
   }
-  .tablist[hidden] {
-    display: none;
+  /* Number first, label under it; the dt comes first in the markup for screen readers. */
+  .amounts div {
+    display: flex;
+    flex-direction: column-reverse;
   }
-  [role='tab'] {
-    padding: 14px 18px;
-    border: 0;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    background: none;
-    color: var(--color-ink);
-    font: 500 0.75rem/1.5 var(--font-body);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
+  .amounts dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(3.5rem, 8vw, 7.5rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: lining-nums;
+    white-space: nowrap;
   }
-  [role='tab'][aria-selected='true'] {
-    border-bottom-color: var(--color-ink);
-    color: var(--color-matcha);
+  .amounts dt {
+    margin-top: 10px;
+    font-size: 0.9375rem;
+    opacity: 0.8;
   }
-  .panel {
-    max-width: 690px;
-    margin: 0 auto 40px;
+  .steps {
+    max-width: 62ch;
     font-size: 1.0625rem;
-    line-height: 1.85;
+    line-height: 1.75;
   }
-  .panel :global(p) {
-    margin: 0 0 1.2em;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  th,
-  td {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--color-stone);
-    text-align: left;
-  }
-  th {
-    width: 40%;
+  .steps :global(strong) {
     font-weight: 600;
   }
 
+  /* --- More from the category --- */
   .related {
-    margin-top: 60px;
+    padding: 96px 0 120px;
   }
   .related h2 {
-    font-size: 1.375rem;
-    margin-bottom: 30px;
+    margin: 0 0 40px;
+    font-size: clamp(1.75rem, 2.4vw, 2.25rem);
   }
-
-  @media (max-width: 999.98px) {
-    .top {
+  .related ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (max-width: 689.98px) {
+    .related ul {
       grid-template-columns: 1fr;
     }
-    h1 {
-      font-size: 2.125rem;
-    }
+  }
+  .related a {
+    display: block;
+    text-decoration: none;
+  }
+  .related :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    margin-bottom: 16px;
+  }
+  .related h3 {
+    margin: 0 0 4px;
+    font-size: 1.25rem;
+  }
+  .related p {
+    margin: 0;
+    color: var(--color-stone-strong);
   }
 </style>

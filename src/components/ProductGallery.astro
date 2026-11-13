@@ -9,81 +9,86 @@ interface Props {
 const { images } = Astro.props;
 ---
 
-<div class="gallery">
-  <div class="main">
+<!-- Wide screens: every photo stacked, scrolled past beside the pinned purchase panel.
+     Phones: a swipeable row. CSS scroll-snap gives it the phone's own momentum and snapping,
+     with no JavaScript; the script only updates the "1 / 3" counter. -->
+<div class="gallery" data-gallery>
+  <div class="track">
     {images.map((image, i) => (
       <Image
         src={image.src}
         alt={image.alt}
         widths={[640, 1280]}
-        sizes="(max-width: 999px) 88vw, 625px"
+        sizes="(max-width: 999px) 100vw, 55vw"
         loading={i === 0 ? 'eager' : 'lazy'}
-        hidden={i > 0}
-        data-index={i}
         data-vt-product={i === 0 ? '' : undefined}
       />
     ))}
   </div>
-
-  {/* Thumbnails stay hidden until the script runs: without JavaScript only the first photo shows. */}
-  {images.length > 1 && (
-    <div class="thumbs" hidden>
-      {images.map((image, i) => (
-        <button type="button" data-index={i} aria-label={`Show image ${i + 1} of ${images.length}`} aria-pressed={i === 0 ? 'true' : 'false'}>
-          <Image src={image.src} alt="" widths={[240]} sizes="113px" />
-        </button>
-      ))}
-    </div>
-  )}
+  {images.length > 1 && <p class="counter" aria-hidden="true">1 / {images.length}</p>}
 </div>
 
 <script>
-  const gallery = document.querySelector<HTMLElement>('.gallery');
-  const thumbs = gallery?.querySelector<HTMLElement>('.thumbs');
-  if (gallery && thumbs) {
-    thumbs.hidden = false;
-    thumbs.addEventListener('click', (event) => {
-      const button = (event.target as HTMLElement).closest('button');
-      if (!button) return;
-      for (const img of gallery.querySelectorAll<HTMLImageElement>('.main img')) {
-        img.hidden = img.dataset.index !== button.dataset.index;
-      }
-      for (const b of thumbs.querySelectorAll('button')) {
-        b.setAttribute('aria-pressed', String(b === button));
-      }
-    });
+  const gallery = document.querySelector<HTMLElement>('[data-gallery]');
+  const track = gallery?.querySelector<HTMLElement>('.track');
+  const counter = gallery?.querySelector<HTMLElement>('.counter');
+  if (track && counter) {
+    const total = track.children.length;
+    track.addEventListener(
+      'scroll',
+      () => (counter.textContent = `${Math.round(track.scrollLeft / track.clientWidth) + 1} / ${total}`),
+      { passive: true },
+    );
   }
 </script>
 
 <style>
-  .main :global(img) {
+  .track {
+    display: grid;
+    gap: 12px;
+  }
+  .track :global(img) {
     width: 100%;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
   }
-  .main :global(img[hidden]),
-  .thumbs[hidden] {
+  .counter {
     display: none;
   }
-  .thumbs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-top: 15px;
-  }
-  .thumbs button {
-    width: 113px;
-    padding: 0;
-    border: 1px solid transparent;
-    background: none;
-    cursor: pointer;
-  }
-  .thumbs button[aria-pressed='true'] {
-    border-color: var(--color-stone);
-  }
-  .thumbs :global(img) {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
+
+  @media (max-width: 999.98px) {
+    /* Edge to edge on phones and tablets: the row bleeds past the page margins. */
+    .gallery {
+      position: relative;
+      margin-inline: calc((100vw - var(--container)) / -2);
+    }
+    .track {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+    }
+    .track::-webkit-scrollbar {
+      display: none;
+    }
+    .track :global(img) {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+      aspect-ratio: 1;
+    }
+    .counter {
+      display: block;
+      position: absolute;
+      right: 16px;
+      bottom: 14px;
+      margin: 0;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: rgb(248 246 241 / 0.85);
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
+    }
   }
 </style>

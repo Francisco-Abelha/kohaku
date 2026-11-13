@@ -103,3 +103,9 @@
 **Chose:** the usual pattern: the bar gets out of the way while you read and comes back when you scroll up. Home starts with it hidden over the hero; other pages start with it visible, sticky under the notice.
 **Alternative:** the earlier reverse (revealed by scrolling down, hidden by scrolling up), which was a deliberate experiment.
 **Why:** reviewed against Apple's design principles (familiarity, wayfinding): people already expect this from Safari and most sites, and scrolling up is how they look for navigation.
+
+## Product page: photos beside a pinned panel, editorial sections
+
+**Chose:** stacked photos beside a sticky purchase panel (a scroll-snap row on phones), and the WooCommerce tabs replaced by sections: description, a tasting-notes pull-quote, care, details, and "How to prepare" as a full-width matcha-green band with the recipe's amounts set large. Recipes are parsed from the content's bold recipe lines by `src/lib/recipe.ts` (tested), falling back to plain text.
+**Alternatives:** a full-bleed hero photo with a slide-up purchase bar; a "museum label" layout; keeping the tabs or an accordion.
+**Why:** the old first screen ran out halfway down; tabs hide the most distinctive content (the recipes) behind clicks. The matcha band answers the design review's call for one bold use of the brand colour. Scroll-snap gives phones native swipe momentum with no JavaScript.
