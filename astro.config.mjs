@@ -9,9 +9,10 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.google(),
-      name: 'Inter',
-      cssVariable: '--font-inter',
-      weights: [400, 500, 600, 700],
+      // Body text: a refined grotesk, clearly distinct from the Cormorant display serif.
+      name: 'Instrument Sans',
+      cssVariable: '--font-instrument',
+      weights: [400, 500, 600],
       subsets: ['latin'],
       fallbacks: ['sans-serif'],
     },
