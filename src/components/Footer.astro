@@ -113,6 +113,9 @@ const year = new Date().getFullYear();
     color: var(--color-matcha);
     opacity: 0.9;
     white-space: nowrap;
+    /* Decorative: its tall glyph box reaches up over the last row of links, so it must
+       not catch clicks meant for them. */
+    pointer-events: none;
   }
 
   .copyright {
