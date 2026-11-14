@@ -5,8 +5,8 @@ const kohakuLinks = [
   { name: 'About', href: '/about/' },
   { name: 'Journal', href: '/journal/' },
   { name: 'Contact', href: '/contact/' },
-  { name: 'Privacy Policy', href: '/privacy-policy/' },
-  { name: 'Refunds & Returns', href: '/refund_returns/' },
+  { name: 'Privacy policy', href: '/privacy-policy/' },
+  { name: 'Refunds and returns', href: '/refund_returns/' },
 ];
 
 const year = new Date().getFullYear();
@@ -113,6 +113,9 @@ const year = new Date().getFullYear();
     color: var(--color-matcha);
     opacity: 0.9;
     white-space: nowrap;
+    /* Decorative: its tall glyph box reaches up over the last row of links, so it must
+       not catch clicks meant for them. */
+    pointer-events: none;
   }
 
   .copyright {
