@@ -45,6 +45,14 @@ const year = new Date().getFullYear();
   </div>
 </footer>
 
+<script>
+  // The footer is stuck to the bottom of the screen behind the page, so the browser thinks a
+  // focused footer link is already in view and doesn't scroll. Tabbing into the footer scrolls
+  // to the end of the page, which slides the page off it.
+  const footer = document.querySelector<HTMLElement>('.site-footer')!;
+  footer.addEventListener('focusin', () => window.scrollTo({ top: document.documentElement.scrollHeight }));
+</script>
+
 <style>
   .site-footer {
     overflow: hidden;
