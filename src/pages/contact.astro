@@ -13,16 +13,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </p>
 
     <div class="columns">
-      <!-- shortcut: demo form that sends nothing (handled in BaseLayout); phase 4 connects it. -->
-      <form data-demo>
+      <!-- Checked as you go and on the server (src/lib/forms.ts); the script is in BaseLayout. -->
+      <form data-form="contact">
         <label class="visually-hidden" for="contact-name">Name</label>
-        <input class="field" id="contact-name" name="name" type="text" placeholder="Name" required />
+        <input class="field" id="contact-name" name="name" type="text" placeholder="Name" autocomplete="name" maxlength="100" aria-describedby="contact-name-error" required />
+        <p class="error" id="contact-name-error"></p>
         <label class="visually-hidden" for="contact-email">Email address</label>
-        <input class="field" id="contact-email" name="email" type="email" placeholder="Email address" required />
+        <input class="field" id="contact-email" name="email" type="email" placeholder="Email address" autocomplete="email" aria-describedby="contact-email-error" required />
+        <p class="error" id="contact-email-error"></p>
         <label class="visually-hidden" for="contact-message">Message</label>
-        <textarea class="field" id="contact-message" name="message" rows="5" placeholder="How can we help?" required></textarea>
+        <textarea class="field" id="contact-message" name="message" rows="5" placeholder="How can we help?" maxlength="5000" aria-describedby="contact-message-error" required></textarea>
+        <p class="error" id="contact-message-error"></p>
+        <!-- Honeypot: hidden from people; spam bots fill it in, and the server then ignores the submission. -->
+        <div class="hp" aria-hidden="true"><label>Company <input name="company" tabindex="-1" autocomplete="off" /></label></div>
         <button class="button" type="submit">Send message</button>
-        <p class="note" role="status" hidden>Thank you — this is a demo form and does not send your message.</p>
+        <p class="note" role="status"></p>
       </form>
 
       <div class="details">
@@ -77,6 +82,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   form .button {
     margin-top: 8px;
     padding: 17px 38px;
+  }
+  .error {
+    /* Sits close under its field, not a full form gap away. */
+    margin: -8px 0 0;
   }
   .note {
     margin: 0;

@@ -94,6 +94,8 @@ const preview = await getImage({ src: image, width: 1200, height: 630, fit: 'cov
 </html>
 
 <script>
+  import { validate, type Errors, type Field, type FormName } from '../lib/forms';
+
   // Page transitions, going forward: tag only the clicked card's photo, so just that
   // one photo morphs into the product page (its gallery carries the same tag).
   document.addEventListener('click', (event) => {
@@ -110,11 +112,69 @@ const preview = await getImage({ src: image, width: 1200, height: 630, fit: 'cov
     img.setAttribute('data-vt-product', '');
   });
 
-  // shortcut: forms marked data-demo only show their note, like on WordPress; phase 4 makes them real.
-  for (const form of document.querySelectorAll<HTMLFormElement>('form[data-demo]')) {
-    form.addEventListener('submit', (event) => {
+  // Forms (contact, newsletter): checked when you leave a field, as you fix one that shows an
+  // error, and on submit; then sent to /api/forms/, which checks again (src/lib/forms.ts).
+  const thanks: Record<FormName, string> = {
+    contact: 'Thank you, your message arrived. Kohaku is a concept store, so it isn’t kept and nobody will reply.',
+    newsletter: 'Thank you. Kohaku is a concept store, so your address isn’t kept and no emails will be sent.',
+  };
+
+  for (const form of document.querySelectorAll<HTMLFormElement>('form[data-form]')) {
+    const name = form.dataset.form as FormName;
+    const fields = [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('.field')];
+    const note = form.querySelector<HTMLElement>('.note')!;
+    const button = form.querySelector<HTMLButtonElement>('[type="submit"]')!;
+    // Our own messages replace the browser's bubbles; `required` stays on the fields for screen readers.
+    form.noValidate = true;
+
+    const values = () => Object.fromEntries(new FormData(form)) as Record<string, string>;
+    const show = (errors: Errors, only?: Element) => {
+      for (const field of fields) {
+        if (only && field !== only) continue;
+        const message = errors[field.name as Field] ?? '';
+        document.getElementById(field.getAttribute('aria-describedby')!)!.textContent = message;
+        if (message) field.setAttribute('aria-invalid', 'true');
+        else field.removeAttribute('aria-invalid');
+      }
+    };
+
+    for (const field of fields) {
+      // Leaving a field with something typed in it: check it. Leaving it empty isn't an error yet.
+      field.addEventListener('blur', () => field.value && show(validate(name, values()), field));
+      // Once a field shows an error, the message updates (and clears) as it's fixed.
+      field.addEventListener('input', () => field.hasAttribute('aria-invalid') && show(validate(name, values()), field));
+    }
+
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      form.querySelector<HTMLElement>('.note')!.hidden = false;
+      note.textContent = '';
+      const errors = validate(name, values());
+      show(errors);
+      const firstInvalid = fields.find((field) => field.hasAttribute('aria-invalid'));
+      if (firstInvalid) return firstInvalid.focus();
+
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/forms/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ form: name, ...values() }),
+        });
+        const data = await response.json();
+        if (data.errors) {
+          show(data.errors);
+          fields.find((field) => field.hasAttribute('aria-invalid'))?.focus();
+        } else if (!response.ok) {
+          throw new Error();
+        } else {
+          form.reset();
+          note.textContent = thanks[name];
+        }
+      } catch {
+        note.textContent = 'That didn’t go through. Check your connection and try again.';
+      } finally {
+        button.disabled = false;
+      }
     });
   }
 </script>

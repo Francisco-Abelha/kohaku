@@ -9,6 +9,8 @@
   --color-white: #ffffff;
   --color-sand: #edeae2;
   --color-night: #192a3d;
+  /* Form errors: a muted brick red that still passes AA contrast on paper. */
+  --color-error: #9b3022;
 
   --font-body: var(--font-instrument);
   --font-display: var(--font-cormorant);
@@ -219,6 +221,24 @@ a:active {
 }
 .field::placeholder {
   color: var(--color-stone-strong);
+}
+
+/* Form messages (the script is in BaseLayout). Empty ones take no space. */
+.field[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+.error {
+  font-size: 0.875rem;
+  color: var(--color-error);
+}
+.error:empty,
+.note:empty {
+  display: none;
+}
+/* Honeypot field: off screen for people, still in the form for bots. */
+.hp {
+  position: absolute;
+  left: -9999px;
 }
 
 /* Page transitions: the browser animates between pages natively (Chrome, Edge, Safari;
