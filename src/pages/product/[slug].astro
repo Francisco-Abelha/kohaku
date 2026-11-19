@@ -92,9 +92,8 @@ const related = products
           </fieldset>
         )}
 
-        <!-- shortcut: only shows a note; phase 3 makes this button add to the real cart. -->
-        <button class="button buy" type="button">Add to cart</button>
-        <p class="buy-note" role="status" hidden>Checkout opens soon. This is a concept store, so nothing is charged.</p>
+        <!-- data-size: the only size, for products without size buttons. -->
+        <button class="button buy" type="button" data-product={product.id} data-size={variants[0].label}>Add to cart</button>
       </div>
     </div>
 
@@ -215,8 +214,12 @@ const related = products
   sizes.forEach((input) => input.addEventListener('change', () => showPrice(true)));
   showPrice(false);
 
-  const note = document.querySelector<HTMLElement>('.buy-note')!;
-  document.querySelector('.buy')!.addEventListener('click', () => (note.hidden = false));
+  // The cart drawer (CartDrawer.astro) listens for this, saves the item and opens.
+  const buy = document.querySelector<HTMLButtonElement>('.buy')!;
+  buy.addEventListener('click', () => {
+    const size = sizes.find((input) => input.checked)?.value ?? buy.dataset.size!;
+    document.dispatchEvent(new CustomEvent('cart:add', { detail: { id: buy.dataset.product, size } }));
+  });
 </script>
 
 <style>
@@ -344,12 +347,6 @@ const related = products
   .buy {
     width: 100%;
     max-width: 420px;
-  }
-  .buy-note {
-    max-width: 420px;
-    margin: 12px 0 0;
-    font-size: 0.875rem;
-    color: var(--color-stone-strong);
   }
 
   /* --- Editorial sections: heading on the left, text on the right --- */
