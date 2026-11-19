@@ -26,6 +26,23 @@ export default defineConfig({
   },
   // WordPress URLs end in a slash (/about/), and we keep them identical.
   trailingSlash: 'always',
+  // WordPress addresses with no page here (from its wp-sitemap.xml and its standard feeds and
+  // archives), sent somewhere sensible with a permanent redirect so old links and search results work.
+  redirects: {
+    '/cart/': '/shop/', // the cart is a drawer now
+    '/checkout/': '/shop/',
+    '/my-account/': '/', // no customer accounts
+    '/category/uncategorized/': '/journal/',
+    '/2026/': '/journal/', // year archive
+    '/author/kohaku/': '/about/',
+    '/feed/': '/journal/', // RSS feeds
+    '/comments/feed/': '/journal/',
+    '/journal/feed/': '/journal/',
+    '/product/[slug]/feed': '/product/[slug]', // per-page comment feeds
+    '/[slug]/feed': '/[slug]',
+    '/wp-sitemap.xml': '/sitemap-index.xml',
+    '/sitemap.xml': '/sitemap-index.xml',
+  },
   // Downloaded at build time and served from our own domain, so visitors never request Google's servers.
   fonts: [
     {
