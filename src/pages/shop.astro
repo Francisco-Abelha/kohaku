@@ -6,6 +6,6 @@ import ShopLookbook from '../components/ShopLookbook.astro';
 const products = await getCollection('products');
 ---
 
-<BaseLayout title="Shop">
+<BaseLayout title="Shop" description="Single-origin and daily matcha, hojicha, the tools to prepare them, and gift sets.">
   <ShopLookbook products={products} />
 </BaseLayout>

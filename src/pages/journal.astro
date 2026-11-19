@@ -6,7 +6,7 @@ import JournalList from '../components/JournalList.astro';
 const posts = (await getCollection('journal')).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
-<BaseLayout title="Journal">
+<BaseLayout title="Journal" description="Notes on gardens, grades and getting a smooth bowl.">
   <div class="container journal first-screen">
     <h1>Journal</h1>
     <p class="intro">Notes on gardens, grades and getting a smooth bowl.</p>

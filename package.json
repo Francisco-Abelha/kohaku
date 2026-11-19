@@ -13,6 +13,7 @@
     "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.6",
     "@astrojs/vercel": "^11.0.22",
     "astro": "^7.4.7",
     "stripe": "^23.2.0"
