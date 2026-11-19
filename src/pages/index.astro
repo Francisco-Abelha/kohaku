@@ -127,11 +127,13 @@ const posts = (await getCollection('journal'))
     <h2>Brewing guides and seasonal launches</h2>
     <p>A short letter when a new harvest lands. Nothing else.</p>
     <!-- shortcut: demo form like on WordPress, stores nothing; the real newsletter comes in phase 4. -->
-    <form class="signup" data-demo>
+    <form class="signup" data-form="newsletter">
       <label for="signup-email" class="visually-hidden">Email address</label>
-      <input id="signup-email" class="field" type="email" name="email" placeholder="Email address" required />
+      <input id="signup-email" class="field" type="email" name="email" placeholder="Email address" autocomplete="email" aria-describedby="signup-email-error" required />
+      <p class="error" id="signup-email-error"></p>
+      <div class="hp" aria-hidden="true"><label>Company <input name="company" tabindex="-1" autocomplete="off" /></label></div>
       <button class="button" type="submit">Subscribe</button>
-      <p class="note" role="status" hidden>Thank you — this is a demo form and does not store your address.</p>
+      <p class="note" role="status"></p>
     </form>
   </section>
 </BaseLayout>
@@ -541,7 +543,15 @@ const posts = (await getCollection('journal'))
   .signup .button {
     padding: 15px 34px;
   }
+  /* Full width under the field and button. */
+  .signup .error {
+    order: 1;
+    flex-basis: 100%;
+    margin: 0;
+    text-align: left;
+  }
   .note {
+    order: 2;
     flex-basis: 100%;
     margin: 4px 0 0;
     font-size: 0.875rem;

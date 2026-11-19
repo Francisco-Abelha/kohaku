@@ -4,7 +4,7 @@ title: Privacy policy
 description: "What happens to your data on Kohaku, a concept store: no cookies, no tracking, and a Stripe checkout in test mode."
 ---
 
-Last updated 18 November 2026.
+Last updated 19 November 2026.
 
 Kohaku is a concept store: a portfolio project, not a real business. It sells nothing, ships nothing and has no customer accounts. This page explains the little that happens to your data when you visit.
 
@@ -14,7 +14,7 @@ Nothing, directly. The site sets no cookies and runs no analytics, advertising o
 
 ## Forms
 
-The contact and newsletter forms are demonstrations. Submitting them shows a note on the page; what you type is not sent anywhere and not stored.
+The contact and newsletter forms are sent to this site's server, which checks that they're filled in correctly and then discards them. What you type is not stored, emailed or shared; the server only logs that a submission arrived, without its contents.
 
 ## Fonts and images
 

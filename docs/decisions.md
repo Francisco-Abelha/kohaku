@@ -139,3 +139,9 @@
 **Chose:** `BaseLayout` takes `description`, `image` and `noindex`, and writes the meta description, canonical link and Open Graph tags. Each page passes its own text (product summary, post excerpt, category description) and photo, cropped to 1200×630 by `getImage`. `@astrojs/sitemap` builds the sitemap (the thank-you page left out), and `/robots.txt` points to it.
 **Alternatives:** generated brand cards for previews (satori and resvg); a hand-written sitemap endpoint.
 **Why:** the photos are the brand's strongest asset and need no new dependencies; the integration finds new pages by itself. `site` is the Vercel address until the domain moves, and must change to `https://shopkohaku.com` then.
+
+## Forms: shared validation, then a function that logs without contents
+
+**Chose:** one `validate()` in `src/lib/forms.ts` (tested), used by the browser for inline errors and by `/api/forms/` to check again. The function logs only that a submission arrived (and a message's length), never what was typed. A honeypot field drops spam bots silently.
+**Alternatives:** email contact messages through Resend; keep the forms as demos.
+**Why:** shows the full pattern (inline validation, server check, accessible errors) without collecting personal data, which a concept store has no reason to keep. Sharing the rules means the browser and server can't disagree.
