@@ -11,6 +11,9 @@ export default defineConfig({
       // Read from .env locally and from Vercel's environment variables when deployed. Server-only:
       // importing it in browser code fails the build, so the key can't leak into the page.
       STRIPE_SECRET_KEY: envField.string({ context: 'server', access: 'secret', startsWith: 'sk_test_' }),
+      // Signs Stripe's webhook calls (src/pages/api/stripe-webhook.ts). Optional so checkout
+      // still works before the webhook is registered; the webhook answers 500 without it.
+      STRIPE_WEBHOOK_SECRET: envField.string({ context: 'server', access: 'secret', startsWith: 'whsec_', optional: true }),
     },
   },
   // WordPress URLs end in a slash (/about/), and we keep them identical.

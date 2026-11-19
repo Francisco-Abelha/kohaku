@@ -89,7 +89,7 @@ Environment variables (see `.env.example`):
 | Variable | Purpose |
 |---|---|
 | `STRIPE_SECRET_KEY` | Stripe **test** secret key (`sk_test_…`). Checkout refuses any other kind. |
-| `STRIPE_WEBHOOK_SECRET` | Signing secret for the webhook endpoint (coming with the webhook) |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret of the webhook endpoint (`whsec_…`). Optional: without it, checkout works but the webhook answers 500. |
 
 To try the checkout, pay with Stripe's test card `4242 4242 4242 4242`, any future expiry date and any CVC.
 
