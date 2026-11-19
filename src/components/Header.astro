@@ -20,12 +20,6 @@ const isHome = Astro.url.pathname === '/';
   <div class="container bar">
     <a class="wordmark" href="/">Kohaku</a>
 
-    <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-nav">
-      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.5" />
-      </svg>
-    </button>
-
     <nav id="site-nav" class="nav" aria-label="Main">
       <button class="menu-close" type="button" aria-label="Close menu">×</button>
       <ul class="menu">
@@ -44,6 +38,17 @@ const isHome = Astro.url.pathname === '/';
       <!-- Phones: closes the full-screen menu with the tagline instead of empty space. -->
       <p class="menu-foot" aria-hidden="true">Matcha, considered.</p>
     </nav>
+
+    <!-- Opens the cart drawer (CartDrawer.astro), which also fills in the count. -->
+    <button class="cart-toggle" type="button" data-cart-open aria-label="Cart">
+      Cart<span class="count" data-cart-count></span>
+    </button>
+
+    <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-nav">
+      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    </button>
   </div>
 </header>
 
@@ -159,8 +164,39 @@ const isHome = Astro.url.pathname === '/';
   .bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 36px;
     height: 80px;
+  }
+
+  .cart-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0;
+    border: 0;
+    background: none;
+    color: var(--color-ink);
+    font: 500 0.9375rem/1.3 var(--font-body);
+    cursor: pointer;
+  }
+  .cart-toggle:hover {
+    color: var(--color-matcha);
+  }
+  .count {
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: var(--color-matcha);
+    color: var(--color-paper);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .count:empty {
+    display: none;
   }
 
   /* Wordmark, from the WordPress Additional CSS */
@@ -173,8 +209,8 @@ const isHome = Astro.url.pathname === '/';
     line-height: 1.05;
     letter-spacing: 0.3em;
     text-transform: uppercase;
-    /* The trailing letter-space after the final U would push the mark off-centre. */
-    margin-right: -0.3em;
+    /* Pushes the nav, cart and menu button to the right. */
+    margin-right: auto;
   }
   .wordmark:hover {
     color: var(--color-matcha);
@@ -265,9 +301,11 @@ const isHome = Astro.url.pathname === '/';
   @media (max-width: 999.98px) {
     .bar {
       height: 64px;
+      gap: 16px;
     }
     .menu-toggle {
       display: block;
+      margin-right: -8px;
     }
     .nav {
       display: flex;

@@ -1,0 +1,518 @@
+---
+import { getImage } from 'astro:assets';
+import { getCollection } from 'astro:content';
+
+// Everything the cart needs to show a line, keyed by product id, written into the page at
+// build time. The cart itself only stores ids, sizes and quantities (src/lib/cart.ts).
+const products = await getCollection('products');
+const catalog = Object.fromEntries(
+  await Promise.all(
+    products.map(async (p) => [
+      p.id,
+      {
+        name: p.data.name,
+        href: `/product/${p.id}/`,
+        image: (await getImage({ src: p.data.images[0].src, width: 160 })).src,
+        sizes: Object.fromEntries(p.data.variants.map((v) => [v.label, v.priceCents])),
+      },
+    ]),
+  ),
+);
+---
+
+<!-- A custom element: the browser runs the script's class for this tag (see customElements.define).
+     Inside, a native <dialog>: opened with showModal(), it keeps focus inside, closes on Escape,
+     makes the page behind inert and sits above everything else on the page. -->
+<cart-drawer>
+  <dialog class="cart" aria-labelledby="cart-title">
+    <div class="sheet">
+      <div class="head">
+        <span class="grip" aria-hidden="true"></span>
+        <h2 id="cart-title">Your cart</h2>
+        <button class="close" type="button" aria-label="Close cart">×</button>
+      </div>
+
+      <div class="empty">
+        <p>Your cart is empty.</p>
+        <a class="button" href="/shop/">Go to the shop</a>
+      </div>
+
+      <ul class="lines"></ul>
+
+      <div class="foot">
+        <p class="subtotal"><span>Subtotal</span><span class="total" aria-live="polite"></span></p>
+        <button class="button checkout" type="button">Checkout</button>
+        <p class="note" role="status">Test checkout. Nothing is charged.</p>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- One cart line, copied by the script for each item. -->
+  <template>
+    <li class="line">
+      <img alt="" width="80" height="100" />
+      <div class="info">
+        <a class="name"></a>
+        <p class="size"></p>
+        <div class="qty">
+          <button class="minus" type="button">−</button>
+          <span class="n"></span>
+          <button class="plus" type="button">+</button>
+        </div>
+      </div>
+      <div class="side">
+        <p class="price"></p>
+        <button class="remove" type="button">Remove</button>
+      </div>
+    </li>
+  </template>
+
+  <script type="application/json" class="catalog" set:html={JSON.stringify(catalog)} />
+</cart-drawer>
+
+<script>
+  import { addLine, itemCount, loadCart, MAX_QTY, saveCart, setQty, type CartLine } from '../lib/cart';
+  import { formatPrice } from '../lib/format';
+
+  type Catalog = Record<string, { name: string; href: string; image: string; sizes: Record<string, number> }>;
+
+  class CartDrawer extends HTMLElement {
+    dialog!: HTMLDialogElement;
+    catalog!: Catalog;
+
+    connectedCallback() {
+      this.dialog = this.querySelector('dialog')!;
+      this.catalog = JSON.parse(this.querySelector('.catalog')!.textContent!);
+
+      // Anything on the page can open the cart or add to it, without importing this class.
+      document.addEventListener('click', (e) => {
+        if ((e.target as Element).closest('[data-cart-open]')) this.open();
+      });
+      document.addEventListener('cart:add', (e) => {
+        const { id, size } = (e as CustomEvent<{ id: string; size: string }>).detail;
+        saveCart(addLine(loadCart(), id, size));
+        this.open();
+      });
+      document.addEventListener('cart:change', () => this.render());
+      // Another tab changed the cart.
+      window.addEventListener('storage', () => this.render());
+
+      this.querySelector('.close')!.addEventListener('click', () => this.dialog.close());
+      // A click on the dimmed backdrop lands on the dialog itself; clicks inside land on .sheet.
+      this.dialog.addEventListener('click', (e) => e.target === this.dialog && this.dialog.close());
+      this.querySelector('.lines')!.addEventListener('click', (e) => this.onLineClick(e));
+      this.querySelector('.checkout')!.addEventListener('click', () => this.checkout());
+      this.enableSwipe();
+      this.render();
+    }
+
+    open() {
+      if (!this.dialog.open) this.dialog.showModal();
+    }
+
+    /** Sends the cart to our server (src/pages/api/checkout.ts), which prices it from the product
+     *  files and replies with the address of a Stripe test checkout page. */
+    async checkout() {
+      const button = this.querySelector<HTMLButtonElement>('.checkout')!;
+      const note = this.querySelector<HTMLElement>('.note')!;
+      button.disabled = true;
+      button.textContent = 'Opening checkout…';
+      try {
+        const response = await fetch('/api/checkout/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lines: this.lines() }),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.url) throw new Error(data.error);
+        location.assign(data.url);
+      } catch (error) {
+        note.textContent = (error as Error).message || 'Checkout couldn’t open. Try again in a moment.';
+        button.disabled = false;
+        button.textContent = 'Checkout';
+      }
+    }
+
+    /** Lines whose product and size still exist; a renamed size or removed product drops out. */
+    lines(): CartLine[] {
+      return loadCart().filter((l) => this.catalog[l.id]?.sizes[l.size] !== undefined);
+    }
+
+    onLineClick(e: Event) {
+      const button = (e.target as Element).closest('button');
+      const row = button?.closest<HTMLElement>('.line');
+      if (!button || !row) return;
+      const [id, size] = JSON.parse(row.dataset.key!);
+      const lines = loadCart();
+      const qty = lines.find((l) => l.id === id && l.size === size)?.qty ?? 0;
+      const change = button.matches('.plus') ? 1 : button.matches('.minus') ? -1 : -qty;
+      // The row being removed takes its focused button with it: hand focus to the heading's close.
+      if (qty + change <= 0) this.querySelector<HTMLElement>('.close')!.focus();
+      saveCart(setQty(lines, id, size, qty + change));
+    }
+
+    render() {
+      const lines = this.lines();
+      const list = this.querySelector('.lines')!;
+      const template = this.querySelector('template')!;
+
+      // Rows are rebuilt on every change, so remember which button had focus and give it back.
+      const active = document.activeElement;
+      const focusKey = active?.closest<HTMLElement>('.line')?.dataset.key;
+      const focusClass = active?.className;
+
+      list.replaceChildren(
+        ...lines.map((line) => {
+          const product = this.catalog[line.id];
+          const multi = Object.keys(product.sizes).length > 1;
+          const label = multi ? `${product.name}, ${line.size}` : product.name;
+          const row = template.content.firstElementChild!.cloneNode(true) as HTMLElement;
+          const $ = <T extends Element>(selector: string) => row.querySelector<T>(selector)!;
+
+          row.dataset.key = JSON.stringify([line.id, line.size]);
+          $<HTMLImageElement>('img').src = product.image;
+          $<HTMLAnchorElement>('.name').href = product.href;
+          $('.name').textContent = product.name;
+          // Single-size products are labelled "Standard" in the content; no need to show it.
+          $('.size').textContent = multi ? line.size : '';
+          $('.n').textContent = String(line.qty);
+          $('.minus').setAttribute('aria-label', `One fewer ${label}`);
+          $('.plus').setAttribute('aria-label', `One more ${label}`);
+          $<HTMLButtonElement>('.plus').disabled = line.qty >= MAX_QTY;
+          $('.remove').setAttribute('aria-label', `Remove ${label}`);
+          $('.price').textContent = formatPrice(product.sizes[line.size] * line.qty);
+          return row;
+        }),
+      );
+
+      if (focusKey && focusClass) {
+        [...list.querySelectorAll<HTMLElement>('.line')]
+          .find((row) => row.dataset.key === focusKey)
+          ?.querySelector<HTMLElement>(`.${focusClass.split(' ')[0]}`)
+          ?.focus();
+      }
+
+      const cents = lines.reduce((sum, l) => sum + this.catalog[l.id].sizes[l.size] * l.qty, 0);
+      this.querySelector('.total')!.textContent = formatPrice(cents);
+      this.toggleAttribute('data-empty', lines.length === 0);
+
+      const count = itemCount(lines);
+      for (const button of document.querySelectorAll('[data-cart-open]')) {
+        button.querySelector('[data-cart-count]')!.textContent = count ? String(count) : '';
+        button.setAttribute('aria-label', count ? `Cart, ${count} ${count === 1 ? 'item' : 'items'}` : 'Cart, empty');
+      }
+    }
+
+    /** Phones: the cart is a bottom sheet you can drag down by its top bar to close. It follows
+     *  the finger 1:1; on release, a quick flick closes it even if it only moved a little. */
+    enableSwipe() {
+      const head = this.querySelector<HTMLElement>('.head')!;
+      const phone = matchMedia('(max-width: 689.98px)');
+
+      head.addEventListener('pointerdown', (down) => {
+        if (!phone.matches || (down.target as Element).closest('button')) return;
+        head.setPointerCapture(down.pointerId);
+        this.dialog.style.transition = 'none';
+        let lastY = down.clientY;
+        let lastTime = down.timeStamp;
+        let velocity = 0; // px per second, positive = downwards
+
+        const move = (e: PointerEvent) => {
+          const dy = e.clientY - down.clientY;
+          velocity = ((e.clientY - lastY) / Math.max(1, e.timeStamp - lastTime)) * 1000;
+          lastY = e.clientY;
+          lastTime = e.timeStamp;
+          // Dragging up past the top resists instead of following.
+          this.dialog.style.translate = `0 ${dy > 0 ? dy : dy / 4}px`;
+        };
+        const end = (e: PointerEvent) => {
+          head.removeEventListener('pointermove', move);
+          head.removeEventListener('pointerup', end);
+          head.removeEventListener('pointercancel', end);
+          // Where the sheet would coast to at this speed (Apple's scroll deceleration formula).
+          const projected = e.clientY - down.clientY + (velocity / 1000) * (0.998 / (1 - 0.998));
+          // Hand back to the CSS transition, which animates on from where the finger let go.
+          this.dialog.style.transition = '';
+          this.dialog.style.translate = '';
+          if (e.type === 'pointerup' && projected > this.dialog.offsetHeight / 2) this.dialog.close();
+        };
+        head.addEventListener('pointermove', move);
+        head.addEventListener('pointerup', end);
+        head.addEventListener('pointercancel', end);
+      });
+    }
+  }
+
+  customElements.define('cart-drawer', CartDrawer);
+</script>
+
+<style>
+  /* Wide screens: a paper panel that slides in from the right edge. */
+  .cart {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(440px, 100vw);
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    box-shadow: -24px 0 48px rgb(26 26 26 / 0.08);
+    translate: 100% 0;
+    /* overlay and display let the closing slide finish before the dialog is removed. */
+    transition:
+      translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+      overlay 0.5s allow-discrete,
+      display 0.5s allow-discrete;
+  }
+  .cart[open] {
+    translate: 0;
+  }
+  @starting-style {
+    .cart[open] {
+      translate: 100% 0;
+    }
+  }
+  .cart::backdrop {
+    background: rgb(26 26 26 / 0);
+    transition:
+      background-color 0.5s ease,
+      overlay 0.5s allow-discrete,
+      display 0.5s allow-discrete;
+  }
+  .cart[open]::backdrop {
+    background: rgb(26 26 26 / 0.3);
+  }
+  @starting-style {
+    .cart[open]::backdrop {
+      background: rgb(26 26 26 / 0);
+    }
+  }
+  /* The page behind doesn't scroll while the cart is open. */
+  :global(html:has(.cart[open])) {
+    overflow: hidden;
+  }
+
+  /* Phones: a sheet that rises from the bottom, as tall as its contents. */
+  @media (max-width: 689.98px) {
+    .cart {
+      inset: auto 0 0 0;
+      width: 100%;
+      height: auto;
+      max-height: 88dvh;
+      border-radius: 14px 14px 0 0;
+      box-shadow: 0 -24px 48px rgb(26 26 26 / 0.08);
+      translate: 0 100%;
+    }
+    @starting-style {
+      .cart[open] {
+        translate: 0 100%;
+      }
+    }
+  }
+
+  /* Reduce motion: the cart fades in and out instead of sliding. */
+  @media (prefers-reduced-motion: reduce) {
+    .cart,
+    .cart[open] {
+      translate: none;
+      opacity: 0;
+      transition:
+        opacity 0.2s ease,
+        overlay 0.2s allow-discrete,
+        display 0.2s allow-discrete;
+    }
+    .cart[open] {
+      opacity: 1;
+    }
+    @starting-style {
+      .cart[open] {
+        translate: none;
+        opacity: 0;
+      }
+    }
+  }
+
+  .sheet {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: inherit;
+  }
+
+  .head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 28px 20px;
+  }
+  .head h2 {
+    margin: 0;
+    font-size: 1.75rem;
+  }
+  .close {
+    padding: 4px 8px;
+    margin-right: -8px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: 2rem;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .grip {
+    display: none;
+  }
+  @media (max-width: 689.98px) {
+    .head {
+      padding-top: 28px;
+      /* The finger drags the sheet here, so the browser mustn't scroll or zoom instead. */
+      touch-action: none;
+      cursor: grab;
+    }
+    .grip {
+      display: block;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      width: 40px;
+      height: 4px;
+      margin-left: -20px;
+      border-radius: 2px;
+      background: var(--color-stone);
+      opacity: 0.5;
+    }
+  }
+
+  .empty {
+    display: none;
+    padding: 8px 28px 40px;
+  }
+  .empty p {
+    margin: 0 0 24px;
+    color: var(--color-stone-strong);
+  }
+  cart-drawer[data-empty] .empty {
+    display: block;
+  }
+  cart-drawer[data-empty] .foot {
+    display: none;
+  }
+
+  .lines {
+    flex: 1;
+    /* Lets the list shrink and scroll inside the sheet's max height instead of overflowing it. */
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding: 0 28px;
+    list-style: none;
+  }
+  .line {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 16px;
+    padding: 20px 0;
+    border-top: 1px solid rgb(139 132 120 / 0.3);
+  }
+  .line img {
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+  }
+  .name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+  .size {
+    margin: 2px 0 12px;
+    font-size: 0.875rem;
+    color: var(--color-stone-strong);
+  }
+  .size:empty {
+    margin-bottom: 10px;
+  }
+  .qty {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-stone);
+    border-radius: 999px;
+  }
+  .qty button {
+    width: 36px;
+    height: 34px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: 1.125rem;
+    cursor: pointer;
+  }
+  .qty button:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .qty button:not(:disabled):active {
+    opacity: 0.6;
+  }
+  .n {
+    min-width: 1.5em;
+    text-align: center;
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .price {
+    margin: 0;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .remove {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-stone-strong);
+    font: inherit;
+    font-size: 0.875rem;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .remove:hover {
+    color: var(--color-matcha);
+  }
+
+  .foot {
+    padding: 20px 28px max(28px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgb(139 132 120 / 0.3);
+  }
+  .subtotal {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 0 16px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .checkout {
+    width: 100%;
+  }
+  .note {
+    margin: 10px 0 0;
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--color-stone-strong);
+  }
+</style>

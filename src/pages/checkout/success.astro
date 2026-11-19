@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Enso from '../../components/Enso.astro';
+---
+
+<!-- Where Stripe sends people after a test payment. The counterpart of the 404 page: there the
+     ensō stops halfway, here it closes. -->
+<BaseLayout title="Thank you">
+  <div class="done first-screen">
+    <Enso />
+    <div class="text">
+      <h1>Thank you.</h1>
+      <p>This was a test order, so nothing was charged and nothing will be shipped.</p>
+      <div class="actions">
+        <a class="button" href="/shop/">Back to the shop</a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { saveCart } from '../../lib/cart';
+
+  // Only empty the cart when Stripe actually sent us here, not on any visit to this address.
+  if (new URLSearchParams(location.search).get('session_id')?.startsWith('cs_')) saveCart([]);
+</script>
+
+<style>
+  .done {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 100px 24px;
+    overflow: hidden;
+    text-align: center;
+  }
+  .done :global(.enso) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(70svh, 90vw);
+    transform: translate(-50%, -50%) rotate(-8deg);
+  }
+  .done :global(.enso path) {
+    fill: none;
+    stroke: var(--color-matcha);
+    stroke-opacity: 0.16;
+    stroke-width: 16;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .done :global(.enso path) {
+      animation: draw 1.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s both;
+    }
+  }
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+  .text {
+    position: relative;
+  }
+  h1 {
+    margin: 0 0 16px;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  p {
+    max-width: 36ch;
+    margin: 0 auto;
+    font-size: 1.125rem;
+    color: var(--color-stone-strong);
+  }
+  .actions {
+    margin-top: 32px;
+  }
+</style>

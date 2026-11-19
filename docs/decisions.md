@@ -115,3 +115,15 @@
 **Chose:** Instrument Sans (self-hosted through the Fonts API) instead of Inter, sentence case for the nav, buttons, labels and tabs, and spaced capitals kept only for place names (the gardens, the hero's corner labels) and the wordmark.
 **Alternatives:** keep Inter; Newsreader for an all-serif site.
 **Why:** a design review flagged Inter as the most default web font and the tracked-capital labels, dot separators, arrows and decorative numbering as template habits. Instrument Sans has more character while staying clearly distinct from the Cormorant display serif.
+
+## Phase 3 host: Vercel
+
+**Chose:** Vercel runs the checkout functions (through the `@astrojs/vercel` adapter, added in the next step); Netlify gets disconnected once checkout lands.
+**Alternatives:** Netlify, which the client site already uses.
+**Why:** the client build already gives Netlify experience, while Vercel is the host being considered for the company site, so this doubles as a trial. It also has the phone connector and public previews already set up. Switching later is one adapter line in `astro.config.mjs`.
+
+## Cart: plain TypeScript custom element on a native dialog
+
+**Chose:** a `<cart-drawer>` custom element wrapping a `<dialog>`, with the cart (ids, sizes, quantities only) in `localStorage`. Product names, prices and thumbnails are written into the page at build time. The pure cart rules live in `src/lib/cart.ts` (tested). Side panel on wide screens, a bottom sheet that can be swiped down on phones.
+**Alternatives:** a Preact island; a separate cart page.
+**Why:** one list and a total doesn't need a framework, and the site's other scripts are plain TypeScript too. `<dialog>` with `showModal()` gives focus trapping, Escape, an inert page behind and top-layer stacking for free. Storing only ids means a stale cart can't carry an old price.
