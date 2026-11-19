@@ -4,10 +4,10 @@ export type Category = CollectionEntry<'products'>['data']['category'];
 
 // Typed as Record<Category, …> so TypeScript flags a category missing from the schema.
 export const categoryNames: Record<Category, string> = {
-  'single-origin': 'Single Origin',
+  'single-origin': 'Single origin',
   daily: 'Daily',
   equipment: 'Equipment',
-  'gift-sets': 'Gift Sets',
+  'gift-sets': 'Gift sets',
 };
 
 // Copied from the WordPress category descriptions.

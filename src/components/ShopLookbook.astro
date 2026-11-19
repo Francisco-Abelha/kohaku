@@ -186,8 +186,9 @@ const countText = (n: number) => (n === 1 ? '1 product' : `${n} products`);
   }
   .description {
     max-width: 60ch;
-    /* Clears the heading's descenders (the g's in "Single Origin"). */
-    margin: 0.9em 0 0;
+    /* Clears the heading's descenders (the g in "Single origin"); scales with the heading,
+       which is up to 150px. */
+    margin: clamp(2.25rem, 4.6vw, 4.25rem) 0 0;
     font-size: 1.0625rem;
     line-height: 1.8;
   }

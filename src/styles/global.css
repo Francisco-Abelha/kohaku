@@ -221,27 +221,6 @@ a:active {
   color: var(--color-stone-strong);
 }
 
-/* Product grid, shared by the home and shop pages. */
-.product-grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  /* 4 columns on the home page; the shop pages set --columns: 3. */
-  grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
-  gap: 30px;
-}
-@media (max-width: 999.98px) {
-  .product-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 689.98px) {
-  .product-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* Page transitions: the browser animates between pages natively (Chrome, Edge, Safari;
    other browsers simply navigate). Named elements morph; everything else crossfades. */
 @view-transition {
