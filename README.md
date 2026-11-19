@@ -24,13 +24,15 @@ The first version of Kohaku was built with WordPress and WooCommerce. It looked 
 | | WordPress version | This version |
 |---|---|---|
 | Platform | WordPress + WooCommerce | Astro + TypeScript |
-| Hosting | _[current host]_ | Vercel |
+| Hosting | Hostinger (LiteSpeed cache) | Vercel |
 | Content | Database, edited in wp-admin | Markdown and JSON files in this repo |
 | Checkout | WooCommerce | Stripe Checkout (test mode) |
-| Lighthouse performance (mobile) | _[score]_ | _[score]_ |
-| Home page weight | _[KB]_ | _[KB]_ |
+| Lighthouse performance (mobile, home) | 92 | 100 |
+| Largest contentful paint (mobile, home) | 3.0 s | 0.9 s |
+| Requests (home) | 37 | 11 |
+| Home page weight | 302 KB | 276 KB |
 
-_Measured with Lighthouse in Chrome DevTools on [date], mobile preset._
+_Measured with PageSpeed Insights (Lighthouse 13.6) on 19 November 2026, mobile preset, median of 3 runs. All four measured pages and the full reports are in [`docs/baseline/`](docs/baseline/)._
 
 ## Stack
 
