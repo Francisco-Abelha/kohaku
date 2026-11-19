@@ -3,13 +3,13 @@ import BaseLayout from './BaseLayout.astro';
 
 // Markdown pages in src/pages/ that name this layout pass their frontmatter here.
 interface Props {
-  frontmatter: { title: string };
+  frontmatter: { title: string; description: string };
 }
 
-const { title } = Astro.props.frontmatter;
+const { title, description } = Astro.props.frontmatter;
 ---
 
-<BaseLayout title={title}>
+<BaseLayout title={title} description={description}>
   <div class="container-narrow text-page first-screen">
     <h1 class="page-title">{title}</h1>
     <div class="prose">

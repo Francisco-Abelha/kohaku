@@ -21,6 +21,6 @@ const products = await getCollection('products', (p) => p.data.category === cate
 const name = categoryNames[category];
 ---
 
-<BaseLayout title={name}>
+<BaseLayout title={name} description={categoryDescriptions[category]}>
   <ShopLookbook title={name} description={categoryDescriptions[category]} products={products} current={category} />
 </BaseLayout>

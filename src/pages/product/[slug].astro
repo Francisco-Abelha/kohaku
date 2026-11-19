@@ -51,7 +51,7 @@ const related = products
   .slice(0, 3);
 ---
 
-<BaseLayout title={name}>
+<BaseLayout title={name} description={summary} image={images[0].src}>
   <div class="container product">
     <div class="top first-screen">
       <ProductGallery images={images} />

@@ -1,6 +1,7 @@
 ---
 layout: ../layouts/TextLayout.astro
 title: Privacy policy
+description: "What happens to your data on Kohaku, a concept store: no cookies, no tracking, and a Stripe checkout in test mode."
 ---
 
 Last updated 18 November 2026.

@@ -1,6 +1,7 @@
 ---
 layout: ../layouts/TextLayout.astro
 title: Refunds and returns
+description: "Kohaku is a concept store: nothing is sold or shipped, so there is nothing to refund or return."
 ---
 
 Last updated 13 November 2026.

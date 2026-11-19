@@ -1,19 +1,38 @@
 ---
-import { Font } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { Font, getImage } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import CartDrawer from '../components/CartDrawer.astro';
+import heroImage from '../assets/products/matcha-bowl-primary-scaled.jpg';
 import '../styles/global.css';
 
 interface Props {
   title?: string;
+  /** The search result snippet and link preview text. */
+  description?: string;
+  /** The link preview photo; the home hero photo if not given. */
+  image?: ImageMetadata;
+  /** Pages search engines should skip, such as the thank-you page. */
+  noindex?: boolean;
   /** Home page: the notice floats over the full-screen hero instead of pushing it down. */
   fullScreenHero?: boolean;
 }
 
-const { title, fullScreenHero = false } = Astro.props;
+const {
+  title,
+  description = 'Single-origin matcha from Uji, Nishio and Yame, and the tools to prepare it. Kohaku is a concept store: no real orders are taken.',
+  image = heroImage,
+  noindex = false,
+  fullScreenHero = false,
+} = Astro.props;
 // Same title format as WordPress.
 const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matcha';
+
+// Link previews need absolute addresses, built from `site` in astro.config.mjs.
+const pageUrl = new URL(Astro.url.pathname, Astro.site);
+// 1200×630 is the size WhatsApp, LinkedIn, iMessage and others expect; the photo is cropped to fit.
+const preview = await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
 ---
 
 <!doctype html>
@@ -25,6 +44,20 @@ const fullTitle = title ? `${title} – Kohaku` : 'Kohaku – single-origin matc
     <Font cssVariable="--font-instrument" preload />
     <Font cssVariable="--font-cormorant" preload />
     <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={pageUrl} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <!-- Open Graph: what a pasted link shows in chat apps and social sites. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kohaku" />
+    <meta property="og:title" content={title ?? fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={new URL(preview.src, Astro.site)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
     <!-- Must run before the page's first paint, so it's an inline script in <head>.
          Arriving back from a product page: tag the matching card's photo so it morphs back into place. -->
     <script is:inline>

@@ -133,3 +133,9 @@
 **Chose:** `/api/stripe-webhook/` checks Stripe's signature on the raw body and, for a paid `checkout.session.completed` event in test mode, logs the order with its line items. Live-mode events are refused.
 **Alternatives:** store orders in a database (Vercel KV, Supabase) and email receipts; skip the webhook and trust the thank-you page.
 **Why:** the thank-you page proves nothing (anyone can open it, and a closed tab never reaches it); the webhook is Stripe telling the server directly. Kohaku ships nothing, so storage and emails would be machinery with no purpose. Duplicate deliveries only log twice; a real shop would store event ids and skip repeats before fulfilling.
+
+## SEO: meta tags in the layout, page photos as previews, official sitemap
+
+**Chose:** `BaseLayout` takes `description`, `image` and `noindex`, and writes the meta description, canonical link and Open Graph tags. Each page passes its own text (product summary, post excerpt, category description) and photo, cropped to 1200×630 by `getImage`. `@astrojs/sitemap` builds the sitemap (the thank-you page left out), and `/robots.txt` points to it.
+**Alternatives:** generated brand cards for previews (satori and resvg); a hand-written sitemap endpoint.
+**Why:** the photos are the brand's strongest asset and need no new dependencies; the integration finds new pages by itself. `site` is the Vercel address until the domain moves, and must change to `https://shopkohaku.com` then.
