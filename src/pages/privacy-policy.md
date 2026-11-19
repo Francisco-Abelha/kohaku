@@ -3,7 +3,7 @@ layout: ../layouts/TextLayout.astro
 title: Privacy policy
 ---
 
-Last updated 13 November 2026.
+Last updated 18 November 2026.
 
 Kohaku is a concept store: a portfolio project, not a real business. It sells nothing, ships nothing and has no customer accounts. This page explains the little that happens to your data when you visit.
 
@@ -21,11 +21,11 @@ Fonts and images are served from this site's own address. Your browser makes no 
 
 ## Hosting
 
-The site is hosted on Netlify and Vercel. Like any web host, they keep standard server logs (such as your IP address, browser type and the pages requested) to run and protect their service. They handle those logs under their own privacy policies.
+The site is hosted on Vercel. Like any web host, it keeps standard server logs (such as your IP address, browser type and the pages requested) to run and protect its service. Vercel handles those logs under its own privacy policy.
 
 ## Checkout
 
-There is no checkout yet. When a test checkout is added, payments will run through Stripe in test mode: card details go to Stripe, never to this site, and no money moves. This page will be updated before that happens.
+The checkout is a test: it runs on Stripe in test mode, accepts only Stripe's test card numbers and moves no money. The cart is kept in your own browser (local storage) until you check out. Checking out sends only the products and quantities to this site's server, which asks Stripe for a checkout page. Everything you type on that page, such as an email address or card number, goes to Stripe, never to this site, and is handled under [Stripe's privacy policy](https://stripe.com/privacy). Use a made-up email address if you try it.
 
 ## The code
 

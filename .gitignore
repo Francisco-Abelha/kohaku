@@ -16,9 +16,9 @@ pnpm-debug.log*
 # raw WordPress API responses, saved by scripts/export_wordpress.py
 raw/
 
-# environment variables
-.env
-.env.production
+# environment variables: any .env file (.env, .env.local, .env.production…)
+.env*
+!.env.example
 
 # macOS-specific files
 .DS_Store
@@ -28,3 +28,6 @@ raw/
 
 # Python bytecode cache
 __pycache__/
+
+# Vercel adapter build output
+.vercel/

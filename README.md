@@ -24,7 +24,7 @@ The first version of Kohaku was built with WordPress and WooCommerce. It looked 
 | | WordPress version | This version |
 |---|---|---|
 | Platform | WordPress + WooCommerce | Astro + TypeScript |
-| Hosting | _[current host]_ | Netlify and Vercel (until phase 3) |
+| Hosting | _[current host]_ | Vercel |
 | Content | Database, edited in wp-admin | Markdown and JSON files in this repo |
 | Checkout | WooCommerce | Stripe Checkout (test mode) |
 | Lighthouse performance (mobile) | _[score]_ | _[score]_ |
@@ -38,7 +38,7 @@ _Measured with Lighthouse in Chrome DevTools on [date], mobile preset._
 - **TypeScript**: types for products, variants and cart items.
 - **Content collections**: products and journal posts live as files and are validated against a schema at build time.
 - **Stripe Checkout**: hosted payment page; a webhook confirms paid orders.
-- **Netlify** and **Vercel**: both are connected to this repo. Every push to `main` deploys to each host's production URL, and every branch and pull request gets a preview on each. Phase 3's server functions will pick one host.
+- **Vercel**: every push to `main` deploys to production, and every branch gets a preview. Pages are static; only `/api/checkout` runs as a serverless function, through the `@astrojs/vercel` adapter.
 - **Python**: a one-off script that exported products and posts from the WordPress REST API.
 
 ## How it works
@@ -88,9 +88,10 @@ Environment variables (see `.env.example`):
 
 | Variable | Purpose |
 |---|---|
-| `STRIPE_SECRET_KEY` | Stripe **test** secret key |
-| `STRIPE_WEBHOOK_SECRET` | Signing secret for the webhook endpoint |
-| `PUBLIC_SITE_URL` | Base URL used for redirects after checkout |
+| `STRIPE_SECRET_KEY` | Stripe **test** secret key (`sk_test_…`). Checkout refuses any other kind. |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret for the webhook endpoint (coming with the webhook) |
+
+To try the checkout, pay with Stripe's test card `4242 4242 4242 4242`, any future expiry date and any CVC.
 
 ## Migrating content from WordPress
 

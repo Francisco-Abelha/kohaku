@@ -13,6 +13,8 @@
     "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
-    "astro": "^7.4.7"
+    "@astrojs/vercel": "^11.0.22",
+    "astro": "^7.4.7",
+    "stripe": "^23.2.0"
   }
 }

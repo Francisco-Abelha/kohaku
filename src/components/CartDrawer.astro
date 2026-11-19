@@ -41,9 +41,8 @@ const catalog = Object.fromEntries(
 
       <div class="foot">
         <p class="subtotal"><span>Subtotal</span><span class="total" aria-live="polite"></span></p>
-        <!-- shortcut: does nothing yet; step 2 sends the cart to Stripe's test checkout. -->
         <button class="button checkout" type="button">Checkout</button>
-        <p class="note">Test checkout. Nothing is charged.</p>
+        <p class="note" role="status">Test checkout. Nothing is charged.</p>
       </div>
     </div>
   </dialog>
@@ -102,12 +101,36 @@ const catalog = Object.fromEntries(
       // A click on the dimmed backdrop lands on the dialog itself; clicks inside land on .sheet.
       this.dialog.addEventListener('click', (e) => e.target === this.dialog && this.dialog.close());
       this.querySelector('.lines')!.addEventListener('click', (e) => this.onLineClick(e));
+      this.querySelector('.checkout')!.addEventListener('click', () => this.checkout());
       this.enableSwipe();
       this.render();
     }
 
     open() {
       if (!this.dialog.open) this.dialog.showModal();
+    }
+
+    /** Sends the cart to our server (src/pages/api/checkout.ts), which prices it from the product
+     *  files and replies with the address of a Stripe test checkout page. */
+    async checkout() {
+      const button = this.querySelector<HTMLButtonElement>('.checkout')!;
+      const note = this.querySelector<HTMLElement>('.note')!;
+      button.disabled = true;
+      button.textContent = 'Opening checkout…';
+      try {
+        const response = await fetch('/api/checkout/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lines: this.lines() }),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.url) throw new Error(data.error);
+        location.assign(data.url);
+      } catch (error) {
+        note.textContent = (error as Error).message || 'Checkout couldn’t open. Try again in a moment.';
+        button.disabled = false;
+        button.textContent = 'Checkout';
+      }
     }
 
     /** Lines whose product and size still exist; a renamed size or removed product drops out. */
