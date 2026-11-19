@@ -127,3 +127,9 @@
 **Chose:** a `<cart-drawer>` custom element wrapping a `<dialog>`, with the cart (ids, sizes, quantities only) in `localStorage`. Product names, prices and thumbnails are written into the page at build time. The pure cart rules live in `src/lib/cart.ts` (tested). Side panel on wide screens, a bottom sheet that can be swiped down on phones.
 **Alternatives:** a Preact island; a separate cart page.
 **Why:** one list and a total doesn't need a framework, and the site's other scripts are plain TypeScript too. `<dialog>` with `showModal()` gives focus trapping, Escape, an inert page behind and top-layer stacking for free. Storing only ids means a stale cart can't carry an old price.
+
+## Webhook: verify and log, no database
+
+**Chose:** `/api/stripe-webhook/` checks Stripe's signature on the raw body and, for a paid `checkout.session.completed` event in test mode, logs the order with its line items. Live-mode events are refused.
+**Alternatives:** store orders in a database (Vercel KV, Supabase) and email receipts; skip the webhook and trust the thank-you page.
+**Why:** the thank-you page proves nothing (anyone can open it, and a closed tab never reaches it); the webhook is Stripe telling the server directly. Kohaku ships nothing, so storage and emails would be machinery with no purpose. Duplicate deliveries only log twice; a real shop would store event ids and skip repeats before fulfilling.
