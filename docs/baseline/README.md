@@ -30,3 +30,14 @@ FCP: first contentful paint. LCP: largest contentful paint. TBT: total blocking 
 - **Accessibility:** WordPress loses points on colour contrast; the rebuild fixed it with a darker stone grey for small text.
 - **SEO:** both miss meta descriptions. The rebuild's are added in the next pull request.
 - **Weight:** the Astro product page is heavier (984 KB against 335 KB) almost entirely because of one photo: `matcha-powder-background-scaled.jpg` becomes a 677 KB WebP at 1280 px wide, since fine powder texture compresses badly. It still scores 100 (the photo isn't the main image), but it's on the list for the QA pass.
+
+## After the launch (shopkohaku.com, 24 November 2026)
+
+Measured the same way once the domain pointed at Vercel. SEO reaches 100 because the real domain no longer carries the `x-robots-tag: noindex` header Vercel puts on `*.vercel.app` addresses, and the product page is lighter after the QA pass (AVIF photos).
+
+| Page | Performance | Accessibility | Best practices | SEO | LCP | Weight | Requests | Perf. runs |
+|---|---|---|---|---|---|---|---|---|
+| home | 100 | 100 | 100 | 100 | 0.9 s | 277 KB | 11 | 98/100/100 |
+| shop | 99 | 100 | 100 | 100 | 1.5 s | 175 KB | 15 | 99/99/100 |
+| product | 100 | 100 | 100 | 100 | 1.4 s | 365 KB | 12 | 100/100/100 |
+| journal-post | 100 | 100 | 100 | 100 | 1.7 s | 191 KB | 9 | 100/100/100 |

@@ -5,7 +5,7 @@ A storefront for Kohaku, a single-origin matcha brand I designed, rebuilt from W
 > **Concept project.** Kohaku is not a real business. Checkout runs in Stripe **test mode**, so no real payments are taken. Use card `4242 4242 4242 4242` with any future date and CVC to try it.
 
 **Live site:** https://shopkohaku.com
-**Original WordPress version:** _[link to an archived copy or screenshots]_
+**Original WordPress version:** retired on 24 November 2026; its Lighthouse reports are kept in [`docs/baseline/`](docs/baseline/).
 
 ![The first screen of the Kohaku home page: "Matcha, considered." inside a hand-drawn ensō](docs/screenshots/home-first-screen.jpg)
 
@@ -28,11 +28,12 @@ The first version of Kohaku was built with WordPress and WooCommerce. It looked 
 | Content | Database, edited in wp-admin | Markdown and JSON files in this repo |
 | Checkout | WooCommerce | Stripe Checkout (test mode) |
 | Lighthouse performance (mobile, home) | 92 | 100 |
+| Lighthouse accessibility / SEO (mobile, home) | 96 / 92 | 100 / 100 |
 | Largest contentful paint (mobile, home) | 3.0 s | 0.9 s |
 | Requests (home) | 37 | 11 |
-| Home page weight | 302 KB | 276 KB |
+| Home page weight | 302 KB | 277 KB |
 
-_Measured with PageSpeed Insights (Lighthouse 13.6) on 19 November 2026, mobile preset, median of 3 runs. All four measured pages and the full reports are in [`docs/baseline/`](docs/baseline/)._
+_Measured with PageSpeed Insights (Lighthouse 13.6), mobile preset, median of 3 runs: WordPress on 19 November 2026, this version on shopkohaku.com on 24 November 2026. All four measured pages are in [`docs/baseline/`](docs/baseline/)._
 
 ## Stack
 
