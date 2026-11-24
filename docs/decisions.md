@@ -145,3 +145,21 @@
 **Chose:** one `validate()` in `src/lib/forms.ts` (tested), used by the browser for inline errors and by `/api/forms/` to check again. The function logs only that a submission arrived (and a message's length), never what was typed. A honeypot field drops spam bots silently.
 **Alternatives:** email contact messages through Resend; keep the forms as demos.
 **Why:** shows the full pattern (inline validation, server check, accessible errors) without collecting personal data, which a concept store has no reason to keep. Sharing the rules means the browser and server can't disagree.
+
+## Domain move: swap two DNS records, keep DNS and email at Hostinger
+
+**Chose:** point `shopkohaku.com` at Vercel by replacing only the `@` A/AAAA records and the `www` CNAME in Hostinger's DNS; `www` redirects to the bare domain in Vercel. Nameservers, MX and the SPF TXT record stay as they are, so email at the domain keeps working. `site` in `astro.config.mjs` becomes `https://shopkohaku.com`.
+**Alternatives:** move the nameservers to Vercel (would mean recreating the email records there).
+**Why:** the smallest change that moves the site, and the easiest to undo. WordPress stays on the Hostinger plan, unreachable by the domain, until it's no longer needed.
+
+**Rollback (the records before the move, 24 November 2026):**
+
+| Type | Name | Value |
+|---|---|---|
+| A | `@` | `88.223.87.192` |
+| A | `@` | `145.223.124.90` |
+| AAAA | `@` | `2a02:4780:4c:f8e:9126:3679:1731:8ccd` |
+| AAAA | `@` | `2a02:4780:4b:d75:7c09:3ae0:f253:59ff` |
+| CNAME | `www` | `www.shopkohaku.com.cdn.hstgr.net` |
+
+Untouched: NS `artemis.dns-parking.com` and `hermes.dns-parking.com`; MX `mx1.hostinger.com` (5) and `mx2.hostinger.com` (10); TXT `v=spf1 include:_spf.mail.hostinger.com ~all`. Hostinger's CDN for the site was switched off for the move; switch it back on when rolling back.
