@@ -148,18 +148,15 @@
 
 ## Domain move: swap two DNS records, keep DNS and email at Hostinger
 
-**Chose:** point `shopkohaku.com` at Vercel by replacing only the `@` A/AAAA records and the `www` CNAME in Hostinger's DNS; `www` redirects to the bare domain in Vercel. Nameservers, MX and the SPF TXT record stay as they are, so email at the domain keeps working. `site` in `astro.config.mjs` becomes `https://shopkohaku.com`.
+**Chose:** point `shopkohaku.com` at Vercel by replacing only the two website records in Hostinger's DNS (the `@` ALIAS and the `www` CNAME, both pointing at Hostinger's CDN) with Vercel's A and CNAME records; `www` redirects to the bare domain in Vercel. Nameservers and every email record stay as they are, so email at the domain keeps working. `site` in `astro.config.mjs` becomes `https://shopkohaku.com`.
 **Alternatives:** move the nameservers to Vercel (would mean recreating the email records there).
 **Why:** the smallest change that moves the site, and the easiest to undo. WordPress stays on the Hostinger plan, unreachable by the domain, until it's no longer needed.
 
-**Rollback (the records before the move, 24 November 2026):**
+**Rollback (the website records before the move, 24 November 2026):** delete Vercel's two records and add these back.
 
-| Type | Name | Value |
-|---|---|---|
-| A | `@` | `88.223.87.192` |
-| A | `@` | `145.223.124.90` |
-| AAAA | `@` | `2a02:4780:4c:f8e:9126:3679:1731:8ccd` |
-| AAAA | `@` | `2a02:4780:4b:d75:7c09:3ae0:f253:59ff` |
-| CNAME | `www` | `www.shopkohaku.com.cdn.hstgr.net` |
+| Type | Name | Content | TTL |
+|---|---|---|---|
+| ALIAS | `@` | `shopkohaku.com.cdn.hstgr.net` | 300 |
+| CNAME | `www` | `www.shopkohaku.com.cdn.hstgr.net` | 300 |
 
-Untouched: NS `artemis.dns-parking.com` and `hermes.dns-parking.com`; MX `mx1.hostinger.com` (5) and `mx2.hostinger.com` (10); TXT `v=spf1 include:_spf.mail.hostinger.com ~all`. Hostinger's CDN for the site was switched off for the move; switch it back on when rolling back.
+Left untouched by the move: NS `artemis.dns-parking.com` and `hermes.dns-parking.com`; MX `mx1.hostinger.com` (5) and `mx2.hostinger.com` (10); TXT `@` `v=spf1 include:_spf.mail.hostinger.com ~all`; TXT `_dmarc` `v=DMARC1; p=none`; CNAMEs `hostingermail-a/b/c._domainkey`, `autodiscover`, `autoconfig`; A `ftp` `88.223.85.15`. If Hostinger's CDN was switched off for the move, switch it back on when rolling back.
