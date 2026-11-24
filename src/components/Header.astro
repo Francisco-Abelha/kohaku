@@ -57,9 +57,18 @@ const isHome = Astro.url.pathname === '/';
   const nav = document.querySelector<HTMLElement>('#site-nav')!;
   const close = nav.querySelector<HTMLButtonElement>('.menu-close')!;
 
+  // Everything the full-screen menu covers: the rest of the bar and every other part of the page.
+  const bar = nav.parentElement!;
+  const covered = () => [
+    ...[...bar.children].filter((el) => el !== nav),
+    ...[...document.body.children].filter((el) => !el.contains(nav)),
+  ];
+
   function setOpen(open: boolean) {
     toggle.setAttribute('aria-expanded', String(open));
     nav.toggleAttribute('data-open', open);
+    // inert: while the menu is open, Tab can't wander onto the page hidden behind it.
+    for (const el of covered()) (el as HTMLElement).inert = open;
     (open ? close : toggle).focus();
   }
 
