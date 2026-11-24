@@ -145,3 +145,18 @@
 **Chose:** one `validate()` in `src/lib/forms.ts` (tested), used by the browser for inline errors and by `/api/forms/` to check again. The function logs only that a submission arrived (and a message's length), never what was typed. A honeypot field drops spam bots silently.
 **Alternatives:** email contact messages through Resend; keep the forms as demos.
 **Why:** shows the full pattern (inline validation, server check, accessible errors) without collecting personal data, which a concept store has no reason to keep. Sharing the rules means the browser and server can't disagree.
+
+## Domain move: swap two DNS records, keep DNS and email at Hostinger
+
+**Chose:** point `shopkohaku.com` at Vercel by replacing only the two website records in Hostinger's DNS (the `@` ALIAS and the `www` CNAME, both pointing at Hostinger's CDN) with Vercel's A and CNAME records; `www` redirects to the bare domain in Vercel. Nameservers and every email record stay as they are, so email at the domain keeps working. `site` in `astro.config.mjs` becomes `https://shopkohaku.com`.
+**Alternatives:** move the nameservers to Vercel (would mean recreating the email records there).
+**Why:** the smallest change that moves the site, and the easiest to undo. WordPress stays on the Hostinger plan, unreachable by the domain, until it's no longer needed.
+
+**Rollback (the website records before the move, 24 November 2026):** delete Vercel's two records and add these back.
+
+| Type | Name | Content | TTL |
+|---|---|---|---|
+| ALIAS | `@` | `shopkohaku.com.cdn.hstgr.net` | 300 |
+| CNAME | `www` | `www.shopkohaku.com.cdn.hstgr.net` | 300 |
+
+Left untouched by the move: NS `artemis.dns-parking.com` and `hermes.dns-parking.com`; MX `mx1.hostinger.com` (5) and `mx2.hostinger.com` (10); TXT `@` `v=spf1 include:_spf.mail.hostinger.com ~all`; TXT `_dmarc` `v=DMARC1; p=none`; CNAMEs `hostingermail-a/b/c._domainkey`, `autodiscover`, `autoconfig`; A `ftp` `88.223.85.15`. If Hostinger's CDN was switched off for the move, switch it back on when rolling back.

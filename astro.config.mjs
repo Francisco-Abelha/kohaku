@@ -6,8 +6,7 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   // The public address, used for canonical links, link previews and the sitemap.
-  // shortcut: the Vercel address until the domain moves; change to https://shopkohaku.com then.
-  site: 'https://kohaku-fgp6.vercel.app',
+  site: 'https://shopkohaku.com',
   integrations: [
     // Lists every built page in /sitemap-index.xml, except the thank-you page.
     sitemap({ filter: (page) => !page.includes('/checkout/') }),
